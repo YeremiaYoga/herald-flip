@@ -1,0 +1,21 @@
+{
+  "title": "Herald Flip",
+  "description": "<p>Herald Beta Testing</p>",
+  "version": "1.0.0",
+  "manifest": "https://raw.githubusercontent.com/YeremiaYoga/herald-flip/main/module.json",
+  "download": "https://github.com/YeremiaYoga/herald-flip/archive/refs/heads/main.zip",
+  "esmodules": ["scripts/main.js"],
+  "styles": [
+    {
+      "src": "styles/style.css"
+    }
+  ],
+  "persistentStorage": true,
+  "socket": true,
+  "packs": [],
+  "compatibility": {
+    "minimum": "12",
+    "verified": "12"
+  },
+  "id": "herald-flip"
+}

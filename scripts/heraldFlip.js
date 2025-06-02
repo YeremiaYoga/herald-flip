@@ -122,7 +122,7 @@ async function heraldFlip_showDialogFlip() {
         await heraldFlip_uploadFileDirectly(userName, selectedType, file);
       } else {
         // await heraldFlip_sendFileToGM(userName, selectedType, file);
-        await heraldFlip_uploadFileDirectly(userName, selectedType, file);
+        // await heraldFlip_uploadFileDirectly(userName, selectedType, file);
       }
 
       app.close();

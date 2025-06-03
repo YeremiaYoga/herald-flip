@@ -12,7 +12,6 @@
   ],
   "persistentStorage": true,
   "socket": true,
-  "packs": [],
   "compatibility": {
     "minimum": "12",
     "verified": "12"

@@ -161,27 +161,6 @@ async function heraldFlip_uploadFileDirectly(userName, fileType, file) {
     ui.notifications.warn("Hanya GM yang dapat mengupload file.");
     return false;
   }
-  const allowedExtensions = {
-    Token: ["webp", "png", "jpg", "jpeg"],
-    Art: ["webp", "png", "jpg", "jpeg"],
-    Audio: ["ogg", "mp3"],
-  };
-
-  const ext = file.name.split(".").pop().toLowerCase();
-  if (!allowedExtensions[fileType]) {
-    ui.notifications.error(`Unknown fileType "${fileType}".`);
-    return false;
-  }
-  if (!allowedExtensions[fileType].includes(ext)) {
-    ui.notifications.error(
-      `Unsupported file type for category "${fileType}". Allowed types: ${allowedExtensions[
-        fileType
-      ]
-        .join(", ")
-        .toUpperCase()}.`
-    );
-    return false;
-  }
 
   const folderPath = `${heraldFlip_folderName}/${userName}/${fileType}`;
   try {

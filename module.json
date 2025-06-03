@@ -16,5 +16,15 @@
     "minimum": "12",
     "verified": "12"
   },
-  "id": "herald-flip"
+  "id": "herald-flip",
+  "relationships": {
+    "requires": [
+      {
+        "id": "socketlib",
+        "type": "module",
+        "manifest": "https://raw.githubusercontent.com/manuelVo/foundryvtt-socketlib/main/module.json",
+        "compatibility": {}
+      }
+    ]
+  }
 }

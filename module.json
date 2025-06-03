@@ -5,11 +5,7 @@
   "manifest": "https://raw.githubusercontent.com/YeremiaYoga/herald-flip/main/module.json",
   "download": "https://github.com/YeremiaYoga/herald-flip/archive/refs/heads/main.zip",
   "esmodules": ["scripts/main.js"],
-  "styles": [
-    {
-      "src": "styles/style.css"
-    }
-  ],
+  "styles": ["styles/style.css"],
   "persistentStorage": true,
   "socket": true,
   "compatibility": {

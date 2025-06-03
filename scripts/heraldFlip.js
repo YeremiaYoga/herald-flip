@@ -118,10 +118,11 @@ async function heraldFlip_showDialogFlip() {
       ).value;
       const userName = game.user.name;
       const file = fileInput.files[0];
+
       if (game.user.isGM) {
         await heraldFlip_uploadFileDirectly(userName, selectedType, file);
       } else {
-        // await heraldFlip_sendFileToGM(userName, selectedType, file);
+        await heraldFlip_sendFileToGM(userName, selectedType, file);
         // await heraldFlip_uploadFileDirectly(userName, selectedType, file);
       }
 
@@ -160,6 +161,8 @@ async function heraldFlip_uploadFileDirectly(userName, fileType, file) {
     ui.notifications.warn("Hanya GM yang dapat mengupload file.");
     return false;
   }
+
+
   const folderPath = `${heraldFlip_folderName}/${userName}/${fileType}`;
   try {
     const result = await FilePicker.upload("data", folderPath, file);
@@ -175,14 +178,14 @@ async function heraldFlip_uploadFileDirectly(userName, fileType, file) {
   return false;
 }
 
-// async function heraldFlip_sendFileToGM(userName, fileType, file) {
-//   const base64File = await helper.heraldFlip_fileToBase64(file);
-//   await heraldFlip_socket.executeAsGM("saveFileHeraldFlip", {
-//     userName,
-//     fileType,
-//     fileName: file.name,
-//     base64: base64File,
-//   });
-// }
+async function heraldFlip_sendFileToGM(userName, fileType, file) {
+  const base64File = await helper.heraldFlip_fileToBase64(file);
+  await heraldFlip_socket.executeAsGM("saveFileHeraldFlip", {
+    userName,
+    fileType,
+    fileName: file.name,
+    base64: base64File,
+  });
+}
 
 export { heraldFlip_renderAccessButton };

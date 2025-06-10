@@ -30,12 +30,122 @@
 }
 
 
-.heraldVanguish-dialogFlipBottom {
+.heraldFlip-dialogFLipTop {
+    display: flex;
+    width: 100%;
+}
+
+.heraldFlip-typeContainer {
+    width: 100%;
+}
+
+.heraldFlip-typeSelectButton.active {
+    background-color: #666666;
+    color: #fff;
+
+}
+
+.heraldFLip-dialogFlipBottom {
     position: absolute;
     bottom: 0;
     left: 0;
     width: 100%;
     padding: 10px;
     z-index: 14;
-    background-color: rgb(0, 0, 0, 0.5);
+}
+
+.heraldFlip-dialogFlipBottomTop {
+    display: flex;
+    align-items: center;
+}
+
+.heraldFlip-tokenStampLink {
+    margin-left: auto;
+}
+
+.heraldFlip-dialogFlipBottomBot {
+    display: flex;
+    align-items: center;
+}
+
+.heraldFlip-searchFlipdataContainer {
+    width: 100%;
+    background-color: #d6d2cd;
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.heraldFlip-searchDataInput {
+    background-color: #d6d2cd;
+    color: #333;
+    border: 1px solid #ccc;
+    padding: 6px 10px;
+    border-radius: 6px;
+    width: 100%;
+    outline: none;
+    font-size: 14px;
+}
+
+
+.heraldFlip-addAssetFlip {
+    width: 30px;
+    height: 30px;
+    border: 2px #333 solid;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+    cursor: pointer;
+    color: #333;
+}
+
+.heraldFlip-dialogFlipMiddle {
+    margin-top: 10px;
+    padding-bottom: 30px;
+}
+
+.heraldFlip-flipTokenContainer {
+    display: flex;
+    gap: 10px;
+    padding: 5px;
+    align-items: center;
+}
+
+.heraldFlip-flipTokenImageContainer {
+    position: relative;
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background-color: #363636;
+    border: 2px solid #5a5a5a;
+    z-index: 8;
+    cursor: pointer;
+}
+
+.heraldFlip-flipTokenImage {
+    width: 99%;
+    height: 99%;
+    border: none;
+    object-fit: cover;
+    object-position: center;
+    z-index: 8;
+    border-radius: 50%;
+}
+
+.heraldFlip-flipTokenName {
+    font-size: 16px;
+    font-weight: bold;
+}
+
+
+.heraldFlip-flipDataRight {
+    margin-left: auto;
+}
+
+
+.heraldFlip-flipTokenDeleteButton {
+    font-size: 16px;
+    color: red;
+    cursor: pointer;
 }

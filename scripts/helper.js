@@ -1,5 +1,4 @@
 async function heraldFLip_createFolder(folder) {
-  console.log(folder);
   try {
     await FilePicker.createDirectory("data", folder);
     ui.notifications.info(`Folder ${folder} created successfully.`);

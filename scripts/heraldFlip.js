@@ -135,7 +135,6 @@ async function heraldFlip_showDialogFlip() {
         await heraldFlip_renderFlipMiddle();
       });
     });
-    await heraldFlip_renderViewFlipBottom();
     await heraldFlip_renderFlipMiddle();
   });
 }
@@ -147,33 +146,12 @@ async function heraldFlip_renderFlipMiddle() {
     await art.heraldFlip_renderViewFlipMiddleArt();
   } else {
     await heraldFlip_renderViewFlipMiddleToken();
+    await heraldFlip_renderViewTokenFlipBottom();
   }
 }
 
 async function heraldFlip_renderViewFlipMiddleToken() {
   let flipMiddle = document.getElementById("heraldFlip-dialogFlipMiddle");
-  const userName = game.user.name;
-  const folderPath = `${heraldFlip_folderName}/${userName}/Token`;
-
-  const result = await FilePicker.browse("data", folderPath);
-  let images = [];
-
-  if (result.files) {
-    const imageFiles = result.files.filter((file) =>
-      /\.(webp|png|jpe?g)$/i.test(file)
-    );
-
-    images = imageFiles.map((filePath) => {
-      const parts = filePath.split("/");
-      const fileNameWithExt = parts[parts.length - 1];
-      const nameOnly = fileNameWithExt.replace(/\.[^/.]+$/, "");
-      const decodedName = decodeURIComponent(nameOnly);
-      return {
-        name: decodedName,
-        path: filePath,
-      };
-    });
-  }
   const user = game.user;
   const folders = game.folders.filter((f) => f.type === "JournalEntry");
   const heraldFlipFolder = folders.find((f) => f.name === "Herald Flip");
@@ -188,20 +166,30 @@ async function heraldFlip_renderViewFlipMiddleToken() {
   if (flipJournal) {
     pages = flipJournal.pages.contents;
   }
-  let arrToken = pages
-    .map((page) => {
-      const image = images.find((img) => img.name === page.name);
-      const imageUrl = image?.path ?? "";
+  let arrToken = "";
 
-      return `
+  let searchValue =
+    document
+      .getElementById("heraldFlip-searchFlipTokenInput")
+      ?.value?.toLowerCase() ?? "";
+
+  for (const page of pages) {
+    const data = await helper.heraldFlip_extractDataFromPage(page);
+
+    if (!data.profileName.toLowerCase().includes(searchValue)) {
+      continue;
+    }
+    console.log(data);
+    arrToken += `
     <div class="heraldFlip-flipTokenContainer">
       <div class="heraldFlip-flipTokenLeft">
         <div class="heraldFlip-flipTokenImageContainer">
-          <img src="${imageUrl}" alt="" class="heraldFlip-flipTokenImage" />
+          <img src="${data.imageUrl}" alt="" class="heraldFlip-flipTokenImage" />
         </div>
       </div>
       <div class="heraldFlip-flipDataMiddle">
-        <div class="heraldFlip-flipTokenName">${page.name}</div>
+        <div class="heraldFlip-flipTokenName">${data.profileName}</div>
+        <div class="heraldFlip-flipTokenActorName">${data.actorName} / ${data.actorId}</div>
         <button class="heraldFlip-flipTokenTransform">Transform</button>
         <button class="heraldFlip-flipTokenActorChange">Actor Change</button>
       </div>
@@ -212,34 +200,73 @@ async function heraldFlip_renderViewFlipMiddleToken() {
         <div class="heraldFlip-flipTokenEditButton">
           <i class="fa-solid fa-pen-to-square"></i>
         </div>
-        <div class="heraldFlip-flipTokenDeleteButton" data-path="${imageUrl}">
+        <div class="heraldFlip-flipTokenDeleteButton" data-path="${data.imageUrl}">
           <i class="fa-solid fa-trash"></i>
         </div>
       </div>
     </div>
   `;
-    })
-    .join("");
+  }
+
   if (flipMiddle) {
     flipMiddle.innerHTML = arrToken;
+
+    flipMiddle
+      .querySelectorAll(".heraldFlip-flipTokenDeleteButton")
+      .forEach((btn, index) => {
+        btn.addEventListener("click", async () => {
+          const confirm = await Dialog.confirm({
+            title: "Confirm Deletion",
+            content: `<p>Are you sure you want to delete this token Profile?</p>`,
+            yes: () => true,
+            no: () => false,
+            defaultYes: false,
+          });
+
+          if (confirm) {
+            const pageToDelete = pages[index];
+            await pageToDelete.delete();
+            // ui.notifications.info(
+            //   `Token profile "${pageToDelete.name}" has been deleted.`
+            // );
+            // await heraldFlip_renderViewFlipMiddleToken();
+          }
+        });
+      });
   }
 }
 
-async function heraldFlip_renderViewFlipBottom() {
+async function heraldFlip_renderViewTokenFlipBottom() {
   let flipBottom = document.getElementById("heraldFlip-dialogFlipBottom");
+  const user = game.user;
+  let selectedActor = user.character;
+  const playerCharacters = game.actors.filter(
+    (actor) =>
+      actor.hasPlayerOwner && actor.isOwner && actor.type === "character"
+  );
+  let playerCharacterOptions = playerCharacters
+    .map((actor) => {
+      const isSelected = selectedActor?.id === actor.id ? "selected" : "";
+      return `<option value="${actor.id}" ${isSelected} style="">
+              ${actor.name}
+            </option>`;
+    })
+    .join("");
   if (flipBottom) {
     flipBottom.innerHTML = `
     <div id="heraldFlip-dialogFlipBottomTop" class="heraldFlip-dialogFlipBottomTop">
-        <div class="heraldFlip-tokenChangeContainer">
-         
+        <div style="width:100%;">
+          <select id="heraldFlip-tokenChangeSelected" style="width:100%;background-color: #d6d2cd;" >
+          ${playerCharacterOptions}
+          </select>
         </div>
        <div id="heraldFlip-tokenStampLink" class="heraldFlip-tokenStampLink" style="cursor:pointer;">
          <img src="/modules/herald-flip/assets/images/tokenstamp_icon.png" alt="" class="" style="width:30px; border:none;" />
       </div>
     </div>
     <div id="heraldFlip-dialogFlipBottomBot" class="heraldFlip-dialogFlipBottomBot">
-      <div class="heraldFlip-searchFlipdataContainer">
-          <input type="text" id="heraldFlip-searchDataInput" class="heraldFlip-searchDataInput" placeholder="Search..." />
+      <div class="heraldFlip-searchFlipTokenContainer">
+          <input type="text" id="heraldFlip-searchFlipTokenInput" class="heraldFlip-searchFlipTokenInput" placeholder="Search..." />
       </div>
       <div id="heraldFlip-addAssetTokenFlip" class="heraldFlip-addAssetTokenFlip">
         <i class="fa-solid fa-plus"></i>
@@ -248,9 +275,29 @@ async function heraldFlip_renderViewFlipBottom() {
     `;
 
     document
+      .getElementById("heraldFlip-tokenChangeSelected")
+      ?.addEventListener("change", async (event) => {
+        const selectedId = event.target.value;
+        const actor = game.actors.get(selectedId);
+        if (!actor) return;
+
+        await game.user.update({ character: selectedId });
+      });
+
+    document
       .getElementById("heraldFlip-tokenStampLink")
       ?.addEventListener("click", () => {
         window.open(heraldFlip_linkTokenStamp, "_blank");
+      });
+
+    let searchTimeout;
+    document
+      .getElementById("heraldFlip-searchFlipTokenInput")
+      ?.addEventListener("input", () => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+          heraldFlip_renderViewFlipMiddleToken();
+        }, 500);
       });
     document
       .getElementById("heraldFlip-addAssetTokenFlip")
@@ -305,6 +352,7 @@ async function heraldFlip_addAssetTokenFlip() {
         callback: async (html) => {
           const name = html.find('[name="profileName"]').val();
           const file = html.find('[name="profileFile"]')[0]?.files[0];
+          const ext = file?.name?.split(".").pop().toLowerCase();
           const userName = game.user.name;
           const selected = document.querySelector(
             ".heraldFlip-selectActorTokenFlip.selected"
@@ -325,7 +373,8 @@ async function heraldFlip_addAssetTokenFlip() {
             await heraldFlip_addTokentoPages(
               name,
               heraldFlip_typeSelected,
-              actorId
+              actorId,
+              ext
             );
           } else {
             await heraldFlip_sendFileToGM(
@@ -337,7 +386,8 @@ async function heraldFlip_addAssetTokenFlip() {
             await heraldFlip_addTokentoPages(
               name,
               heraldFlip_typeSelected,
-              actorId
+              actorId,
+              ext
             );
           }
         },
@@ -361,7 +411,7 @@ async function heraldFlip_addAssetTokenFlip() {
       });
   }, 100);
 }
-async function heraldFlip_addTokentoPages(name, type, actorid) {
+async function heraldFlip_addTokentoPages(name, type, actorid, ext) {
   const user = game.user;
   const folders = game.folders.filter((f) => f.type === "JournalEntry");
   const heraldFlipFolder = folders.find((f) => f.name === "Herald Flip");
@@ -373,47 +423,31 @@ async function heraldFlip_addTokentoPages(name, type, actorid) {
     (j) => j.folder?.id === playerFolder?.id && j.name === type
   );
 
+  const actor = game.actors.get(actorid);
+  const actorName = actor?.name || "Unknown";
   const pageData = {
     name: name,
     type: "text",
     text: {
       content: `
-       <img src="Herald%27s-Flip/${user.name}/Token/${name}.png" alt="" />
-        <p><strong>Name :</strong> ${name}</p>
+        <img src="Herald%27s-Flip/${user.name}/Token/${name}.${ext}" alt="" width="100" height="100" />
+        <p><strong>Profile Name :</strong> ${name}</p>
         <p><strong>Type :</strong> ${type}</p>
         <p><strong>ActorId :</strong> ${actorid}</p>
+        <p><strong>Actor Name :</strong> ${actorName}</p>
+        <p><strong>Image Name :</strong> ${name}</p>
+        <p><strong>Image Ext :</strong> ${ext}</p>
+        <p><strong>Size :</strong> 1</p>
+        <p><strong>Effect :</strong> </p>
+        <p><strong>Items :</strong> </p>
+        <p><strong>Message :</strong> </p>
       `,
       format: 1,
     },
   };
 
   if (flipJournal) {
-    // const existingPage = flipFolder.pages.find((p) => p.name === pageData.name);
     await flipJournal.createEmbeddedDocuments("JournalEntryPage", [pageData]);
-    // if (existingPage) {
-    //   new Dialog({
-    //     title: "Yes ",
-    //     content: `<p>The Character Might Already Exist, do you wish to Continue?</p>`,
-    //     buttons: {
-    //       yes: {
-    //         label: "Yes",
-    //         callback: async () => {
-    //           await existingPage.delete();
-    //           const createdPages = await partyJournal.createEmbeddedDocuments(
-    //             "JournalEntryPage",
-    //             [pageData]
-    //           );
-    //         },
-    //       },
-    //       no: {
-    //         label: "No",
-    //         callback: () => {},
-    //       },
-    //     },
-    //     default: "no",
-    //   }).render(true);
-    // } else {
-    // }
   }
 }
 
@@ -479,15 +513,12 @@ async function heraldFlip_uploadFileDirectly(
 
 async function heraldFlip_sendFileToGM(userName, fileType, file, name) {
   const base64File = await helper.heraldFlip_fileToBase64(file);
-
-  // const ext = file.name.split(".").pop();
-
-  // const finalName = name.endsWith(`.${ext}`) ? name : `${name}.${ext}`;
-
+  const ext = file.name.split(".").pop();
+  const finalName = name.endsWith(`.${ext}`) ? name : `${name}.${ext}`;
   await heraldFlip_socket.executeAsGM("saveFileHeraldFlip", {
     userName,
     fileType,
-    fileName: file.name,
+    fileName: finalName,
     base64: base64File,
   });
 }

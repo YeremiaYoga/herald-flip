@@ -67,8 +67,36 @@ async function heraldFlip_createFolderJournal(user) {
   }
 }
 
+function heraldFlip_extractDataFromPage(page) {
+  const content = page.text?.content ?? "";
+
+  const extract = (label) => {
+    const regex = new RegExp(`<strong>${label}\\s*:</strong>\\s*([^<]*)</p>`);
+    const match = content.match(regex);
+    return match?.[1]?.trim() || "";
+  };
+
+  const imageMatch = content.match(/<img src="([^"]+)"/);
+  const imageUrl = imageMatch?.[1] || "";
+
+  return {
+    imageUrl,
+    profileName: extract("Profile Name"),
+    type: extract("Type"),
+    actorId: extract("ActorId"),
+    actorName: extract("Actor Name"),
+    imageName: extract("Image Name"),
+    imageExt: extract("Image Ext"),
+    size: Number(extract("Size")) || 1, 
+    effect: extract("Effect"),
+    items: extract("Items"),
+    message: extract("Message"),
+  };
+}
+
 export {
   heraldFLip_createFolder,
   heraldFlip_fileToBase64,
   heraldFlip_createFolderJournal,
+  heraldFlip_extractDataFromPage,
 };

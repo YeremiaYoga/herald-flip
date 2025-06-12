@@ -57,6 +57,9 @@
 .heraldFlip-dialogFlipBottomTop {
     display: flex;
     align-items: center;
+    margin-bottom: 10px;
+    gap: 10px;
+
 }
 
 .heraldFlip-tokenStampLink {
@@ -66,16 +69,17 @@
 .heraldFlip-dialogFlipBottomBot {
     display: flex;
     align-items: center;
+    gap: 10px;
 }
 
-.heraldFlip-searchFlipdataContainer {
+.heraldFlip-searchFlipTokenContainer {
     width: 100%;
     background-color: #d6d2cd;
     border-radius: 8px;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
 }
 
-.heraldFlip-searchDataInput {
+.heraldFlip-searchFlipTokenInput {
     background-color: #d6d2cd;
     color: #333;
     border: 1px solid #ccc;
@@ -137,6 +141,10 @@
     font-size: 18px;
     font-weight: bold;
 }
+.heraldFlip-flipTokenActorName {
+    font-size: 10px;
+    color: #5a5a5a;
+}
 
 .heraldFlip-flipTokenTransform,
 .heraldFlip-flipTokenActorChange {
@@ -172,58 +180,61 @@
 
 
 .heraldFlip-gridActorTokenFlip {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr); /* Selalu 5 kolom */
-  gap: 8px;
-  margin-top: 8px;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    /* Selalu 5 kolom */
+    gap: 8px;
+    margin-top: 8px;
 }
 
 .heraldFlip-selectActorTokenFlip {
-  flex: 0 0 calc(20% - 8px); /* 5 per row */
-  cursor: pointer;
-  border-radius: 6px;
-  transition: 0.3s;
-  position: relative;
-  overflow: hidden;
-  border: 2px solid transparent;
+    flex: 0 0 calc(20% - 8px);
+    /* 5 per row */
+    cursor: pointer;
+    border-radius: 6px;
+    transition: 0.3s;
+    position: relative;
+    overflow: hidden;
+    border: 2px solid transparent;
 }
 
 .heraldFlip-selectActorTokenFlip.selected {
-  border-color: #ff9800;
-  box-shadow: 0 0 10px #ff9800;
+    border-color: #ff9800;
+    box-shadow: 0 0 10px #ff9800;
 }
 
 .heraldFlip-imgActorTokenFlipWrapper {
-  position: relative;
-  width: 100%;
-  padding-top: 100%; /* square box */
-  background: #333;
+    position: relative;
+    width: 100%;
+    padding-top: 100%;
+    /* square box */
+    background: #333;
 }
 
 .heraldFlip-imgActorTokenFlipWrapper img {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .heraldFlip-labelActorTokenFlip {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: rgba(0, 0, 0, 0.7);
-  color: #fff;
-  font-size: 10px;
-  padding: 4px;
-  text-align: center;
-  opacity: 0;
-  transition: opacity 0.2s;
-  pointer-events: none;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    font-size: 10px;
+    padding: 4px;
+    text-align: center;
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
 }
 
 .heraldFlip-selectActorTokenFlip:hover .heraldFlip-labelActorTokenFlip {
-  opacity: 1;
+    opacity: 1;
 }

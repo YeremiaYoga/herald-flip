@@ -45,6 +45,10 @@
 
 }
 
+.heraldFlip-flipDataMiddle {
+    width: 100%;
+}
+
 .heraldFLip-dialogFlipBottom {
     position: absolute;
     bottom: 0;
@@ -104,9 +108,10 @@
     color: #333;
 }
 
+
 .heraldFlip-dialogFlipMiddle {
     margin-top: 10px;
-    padding-bottom: 30px;
+    padding-bottom: 20%;
 }
 
 .heraldFlip-flipTokenContainer {
@@ -141,6 +146,7 @@
     font-size: 18px;
     font-weight: bold;
 }
+
 .heraldFlip-flipTokenActorName {
     font-size: 10px;
     color: #5a5a5a;
@@ -150,7 +156,7 @@
 .heraldFlip-flipTokenActorChange {
     font-size: 14px;
     line-height: 20px;
-    width: 80%;
+    width: 50%;
     cursor: pointer;
 }
 
@@ -172,6 +178,37 @@
     cursor: pointer;
 }
 
+.heraldFlip-flipTokenOpsiContainer {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.heraldFlip-flipTokenOpsiTooltip {
+  visibility: hidden;
+  width: max-content;
+  background-color: black;
+  color: #fff;
+  text-align: center;
+  padding: 4px 8px;
+  border-radius: 4px;
+  position: absolute;
+  z-index: 10;
+  bottom: 125%; /* Bisa ubah ke top/left/right sesuai kebutuhan */
+  left: 50%;
+  transform: translateX(-50%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  white-space: nowrap;
+  font-size: 0.75rem;
+}
+
+.heraldFlip-flipTokenOpsiContainer:hover .heraldFlip-flipTokenOpsiTooltip {
+  visibility: visible;
+  opacity: 1;
+}
+
+
 
 .heraldFlip-flipTokenDeleteButton {
     color: red;
@@ -182,14 +219,12 @@
 .heraldFlip-gridActorTokenFlip {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    /* Selalu 5 kolom */
     gap: 8px;
     margin-top: 8px;
 }
 
 .heraldFlip-selectActorTokenFlip {
     flex: 0 0 calc(20% - 8px);
-    /* 5 per row */
     cursor: pointer;
     border-radius: 6px;
     transition: 0.3s;

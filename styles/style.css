@@ -124,12 +124,25 @@
     font-size: 14px;
 }
 
-.heraldFlip-addAssetTokenFlipWrapper {
+.heraldFlip-filterTokenFlip {
+    width: 30px;
+    height: 30px;
+    border: 2px white solid;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+    cursor: pointer;
+    color: white;
+}
+
+.heraldFlip-addAssetFlipWrapper {
     position: relative;
     display: inline-block;
 }
 
-.heraldFlip-addAseetTokenFlipTooltip {
+.heraldFlip-addAseetFlipTooltip {
     visibility: hidden;
     background-color: black;
     color: #fff;
@@ -147,13 +160,13 @@
     transition: opacity 0.3s;
 }
 
-.heraldFlip-addAssetTokenFlipWrapper:hover .heraldFlip-addAseetTokenFlipTooltip {
+.heraldFlip-addAssetFlipWrapper:hover .heraldFlip-addAseetFlipTooltip {
     visibility: visible;
     opacity: 1;
 }
 
 
-.heraldFlip-addAssetTokenFlip {
+.heraldFlip-addAssetFlip {
     width: 30px;
     height: 30px;
     border: 2px white solid;
@@ -343,3 +356,13 @@
 .heraldFlip-selectActorTokenFlip:hover .heraldFlip-labelActorTokenFlip {
     opacity: 1;
 }
+
+
+/*************************************************************************************************************************************************/
+/************************************************ AUDIO *****************************************************************************************/
+/***********************************************************************************************************************************************/
+
+
+/*************************************************************************************************************************************************/
+/************************************************ ART *****************************************************************************************/
+/***********************************************************************************************************************************************/

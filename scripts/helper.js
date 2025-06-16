@@ -1,10 +1,9 @@
 async function heraldFLip_createFolder(folder) {
   try {
     await FilePicker.createDirectory("data", folder);
-    ui.notifications.info(`Folder ${folder} created successfully.`);
+    console.log("folder sudah dibuat");
   } catch (error) {
     console.log(error);
-    console.log("folder sudah dibuat");
   }
 }
 
@@ -67,6 +66,55 @@ async function heraldFlip_createFolderJournal(user) {
   }
 }
 
+async function heraldFlip_createFolderPlaylist(user) {
+  let audioCategory = [
+    "Chill",
+    "Tense",
+    "Happy",
+    "Mysterious",
+    "Whimsical",
+    "Mystic",
+    "Melancholy",
+    "Romantic",
+    "Sad",
+    "Reunion",
+    "Battle",
+    "Boss",
+    "Heroic",
+    "Hopeless",
+  ];
+  const folders = await game.folders.filter((f) => f.type === "Playlist");
+  let heraldFlipFolder = "";
+  let playerFolder = "";
+  for (let folder of folders) {
+    if (folder.name == "Herald Flip") {
+      heraldFlipFolder = folder;
+    }
+    if (
+      (folder.name == user.name && folder.folder.name == "Herald Flip") ||
+      (folder.name == user.name && folder.folder.id == heraldFlipFolder.id)
+    ) {
+      playerFolder = folder;
+    }
+  }
+  if (!heraldFlipFolder) {
+    heraldFlipFolder = await Folder.create({
+      name: "Herald Flip",
+      type: "Playlist",
+    });
+  }
+
+  if (!playerFolder) {
+    // const hexColor = `${user.color.toString(16).padStart(6, "0")}`;
+    playerFolder = await Folder.create({
+      name: user.name,
+      type: "JournalEntry",
+      folder: heraldFlipFolder.id,
+      // color: hexColor,
+    });
+  }
+}
+
 function heraldFlip_extractDataFromPage(page) {
   const content = page.text?.content ?? "";
 
@@ -87,11 +135,83 @@ function heraldFlip_extractDataFromPage(page) {
     actorName: extract("Actor Name"),
     imageName: extract("Image Name"),
     imageExt: extract("Image Ext"),
-    size: Number(extract("Size")) || 1, 
+    size: Number(extract("Size")) || 1,
     effect: extract("Effect"),
     items: extract("Items"),
     message: extract("Message"),
   };
+}
+
+async function heraldFlip_uploadFileDirectly(
+  userName,
+  fileType,
+  file,
+  filename,
+  folderPath
+) {
+  console.log(file);
+  if (!game.user.isGM) {
+    ui.notifications.warn("Hanya GM yang dapat mengupload file.");
+    return false;
+  }
+  const allowedExtensions = {
+    Token: ["webp", "png", "jpg", "jpeg"],
+    Art: ["webp", "png", "jpg", "jpeg"],
+    Audio: ["ogg", "mp3"],
+  };
+
+  const originalExt = file.name.split(".").pop().toLowerCase();
+  if (!allowedExtensions[fileType]) {
+    ui.notifications.error(`Unknown fileType "${fileType}".`);
+    return false;
+  }
+  if (!allowedExtensions[fileType].includes(originalExt)) {
+    ui.notifications.error(
+      `Unsupported file type for category "${fileType}". Allowed types: ${allowedExtensions[
+        fileType
+      ]
+        .join(", ")
+        .toUpperCase()}.`
+    );
+    return false;
+  }
+  const finalFilename = filename.endsWith(`.${originalExt}`)
+    ? filename
+    : `${filename}.${originalExt}`;
+  try {
+    const renamedFile = new File([file], finalFilename, { type: file.type });
+
+    const result = await FilePicker.upload("data", folderPath, renamedFile);
+    if (result.path) {
+      ui.notifications.info(`Upload Success ${result.path}`);
+
+      return true;
+    }
+  } catch (err) {
+    console.error("Upload gagal:", err);
+    ui.notifications.error("Upload file gagal.");
+  }
+
+  return false;
+}
+
+async function heraldFlip_sendFileToGM(
+  userName,
+  fileType,
+  file,
+  name,
+  folderPath
+) {
+  const base64File = await helper.heraldFlip_fileToBase64(file);
+  const ext = file.name.split(".").pop();
+  const finalName = name.endsWith(`.${ext}`) ? name : `${name}.${ext}`;
+  await heraldFlip_socket.executeAsGM("saveFileHeraldFlip", {
+    userName,
+    fileType,
+    fileName: finalName,
+    base64: base64File,
+    folderPath,
+  });
 }
 
 export {
@@ -99,4 +219,6 @@ export {
   heraldFlip_fileToBase64,
   heraldFlip_createFolderJournal,
   heraldFlip_extractDataFromPage,
+  heraldFlip_uploadFileDirectly,
+  heraldFlip_sendFileToGM,
 };

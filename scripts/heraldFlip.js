@@ -18,14 +18,20 @@ Hooks.once("socketlib.ready", () => {
   heraldFlip_socket.register("saveFileHeraldFlip", async (data) => {
     if (!game.user.isGM) return;
 
-    const { userName, fileType, fileName, base64 } = data;
+    const { userName, fileType, fileName, base64, folderPath } = data;
 
     try {
       const blob = await (await fetch(base64)).blob();
 
       const file = new File([blob], fileName, { type: blob.type });
       console.log(fileType);
-      await heraldFlip_uploadFileDirectly(userName, fileType, file, fileName);
+      await helper.heraldFlip_uploadFileDirectly(
+        userName,
+        fileType,
+        file,
+        fileName,
+        folderPath
+      );
     } catch (err) {
       console.error("Error saving file:", err);
       ui.notifications.error("Error saving file:");
@@ -73,6 +79,7 @@ async function heraldFlip_createFolderPlayer(user) {
   helper.heraldFLip_createFolder(`${heraldFlip_folderName}/${user.name}/Token`);
   helper.heraldFLip_createFolder(`${heraldFlip_folderName}/${user.name}/Art`);
   helper.heraldFLip_createFolder(`${heraldFlip_folderName}/${user.name}/Audio`);
+  audio.heraldFlip_createAllThemeAudioFolder(heraldFlip_folderName, user);
 }
 
 async function heraldFlip_showDialogFlip() {
@@ -154,6 +161,7 @@ async function heraldFlip_showDialogFlip() {
 async function heraldFlip_renderFlipMiddle() {
   if (heraldFlip_typeSelected == "Audio") {
     await audio.heraldFlip_renderViewFlipMiddleAudio();
+    await audio.heraldFlip_renderViewAudioFlipBottom();
   } else if (heraldFlip_typeSelected == "Art") {
     await art.heraldFlip_renderViewFlipMiddleArt();
   } else {
@@ -481,8 +489,6 @@ async function heraldFlip_editTokenFlip(page) {
 
   dialog.render(true);
   Hooks.once("renderDialog", async (app) => {
-   
-
     const dialogElement = app.element[0];
 
     const contentElement = dialogElement.querySelector(".window-content");
@@ -525,26 +531,31 @@ async function heraldFlip_renderViewTokenFlipBottom() {
   if (flipBottom) {
     flipBottom.innerHTML = `
     <div id="heraldFlip-dialogFlipBottomTop" class="heraldFlip-dialogFlipBottomTop">
-        <div style="display: flex;align-items: center;  justify-content: space-between; width: 100%; background-color:#121212;">
-          <select id="heraldFlip-tokenChangeSelected" style="flex: 1;color: white !important;" >
-          ${playerCharacterOptions}
-          </select>
-        </div>
-       <div id="heraldFlip-tokenStampLink" class="heraldFlip-tokenStampLink " style="cursor:pointer;">
-          <img src="/modules/herald-flip/assets/images/tokenstamp_icon.png" alt="" style="width:30px; border:none;" />
-          <span class="heraldFlip-tokenStampTooltip">Token Stamp</span>
-        </div>
-
+      <div style="display: flex;align-items: center;  justify-content: space-between; width: 100%; background-color:#121212;">
+        <select id="heraldFlip-tokenChangeSelected" style="flex: 1;color: white !important;" >
+        ${playerCharacterOptions}
+        </select>
+      </div>
+      <div id="heraldFlip-tokenStampLink" class="heraldFlip-tokenStampLink " style="cursor:pointer;">
+        <img src="/modules/herald-flip/assets/images/tokenstamp_icon.png" alt="" style="width:30px; border:none;" />
+        <span class="heraldFlip-tokenStampTooltip">Token Stamp</span>
+      </div>
     </div>
     <div id="heraldFlip-dialogFlipBottomBot" class="heraldFlip-dialogFlipBottomBot">
       <div class="heraldFlip-searchFlipTokenContainer">
           <input type="text" id="heraldFlip-searchFlipTokenInput" class="heraldFlip-searchFlipTokenInput" placeholder="Search..." />
       </div>
-      <div class="heraldFlip-addAssetTokenFlipWrapper">
-        <div id="heraldFlip-addAssetTokenFlip" class="heraldFlip-addAssetTokenFlip">
+      <div class="heraldFlip-filterTokenFlipWrapper">
+        <div class="heraldFlip-filterTokenFlip">
+          <i class="fa-solid fa-filter"></i>
+        </div>
+
+      </div>
+      <div class="heraldFlip-addAssetFlipWrapper">
+        <div id="heraldFlip-addAssetTokenFlip" class="heraldFlip-addAssetFlip">
           <i class="fa-solid fa-plus"></i>
         </div>
-        <span class="heraldFlip-addAseetTokenFlipTooltip">Add Profile</span>
+        <span class="heraldFlip-addAseetFlipTooltip">Add Profile</span>
       </div>
      
     </div>
@@ -597,28 +608,33 @@ async function heraldFlip_addAssetTokenFlip() {
                 <input type="file" id="heraldFlip-profileFileInput" name="profileFile"/>
               </div>
               <div>Select a Character:</div>
-              <div class="form-group">
-                <div class="heraldFlip-gridActorTokenFlip">
-                  ${game.actors
-                    .filter(
-                      (actor) =>
-                        actor.ownership[game.user.id] >=
-                        CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER
-                    )
-                    .map(
-                      (actor) => `
-                        <div class="heraldFlip-selectActorTokenFlip" data-id="${actor.id}">
-                          <div class="heraldFlip-imgActorTokenFlipWrapper">
-                            <img src="${actor.img}" alt="${actor.name}" />
-                            <div class="heraldFlip-labelActorTokenFlip">${actor.name}</div>
+                <input type="text" id="heraldFlip-actorSearchInput" placeholder="Search character..." style="width: 100%; margin-bottom: 8px; padding: 4px; color: white; border: 1px solid #555;" />
+                <div class="form-group">
+                
+                  <div class="heraldFlip-gridActorTokenFlip">
+                    ${game.actors
+                      .filter(
+                        (actor) =>
+                          actor.ownership[game.user.id] >=
+                          CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER
+                      )
+                      .map(
+                        (actor) => `
+                          <div class="heraldFlip-selectActorTokenFlip" data-id="${
+                            actor.id
+                          }" data-name="${actor.name.toLowerCase()}">
+                            <div class="heraldFlip-imgActorTokenFlipWrapper">
+                              <img src="${actor.img}" alt="${actor.name}" />
+                              <div class="heraldFlip-labelActorTokenFlip">${
+                                actor.name
+                              }</div>
+                            </div>
                           </div>
-                        </div>
-                      `
-                    )
-                    .join("")}
+                        `
+                      )
+                      .join("")}
+                  </div>
                 </div>
-
-              </div>
             </form>
           `,
     buttons: {},
@@ -637,6 +653,14 @@ async function heraldFlip_addAssetTokenFlip() {
       html.find(".heraldFlip-selectActorTokenFlip").on("click", function () {
         html.find(".heraldFlip-selectActorTokenFlip").removeClass("selected");
         this.classList.add("selected");
+      });
+
+      html.find("#heraldFlip-actorSearchInput").on("input", function () {
+        const search = this.value.trim().toLowerCase();
+        html.find(".heraldFlip-selectActorTokenFlip").each(function () {
+          const name = this.dataset.name;
+          this.style.display = name.includes(search) ? "block" : "none";
+        });
       });
       cancelButton.on("click", () => dialog.close());
       confirmButton.on("click", async () => {
@@ -658,20 +682,22 @@ async function heraldFlip_addAssetTokenFlip() {
           ui.notifications.warn("Please fill: " + missingFields.join(", "));
           return;
         }
-
+        let folderPath = `Herald's-Flip/${userName}/Token`;
         if (game.user.isGM) {
-          await heraldFlip_uploadFileDirectly(
+          await helper.heraldFlip_uploadFileDirectly(
             userName,
             heraldFlip_typeSelected,
             file,
-            name
+            name,
+            folderPath
           );
         } else {
-          await heraldFlip_sendFileToGM(
+          await helper.heraldFlip_sendFileToGM(
             userName,
             heraldFlip_typeSelected,
             file,
-            name
+            name,
+            folderPath
           );
         }
 
@@ -762,71 +788,6 @@ async function heraldFlip_addTokentoPages(name, type, actorid, ext) {
   if (flipJournal) {
     await flipJournal.createEmbeddedDocuments("JournalEntryPage", [pageData]);
   }
-}
-
-async function heraldFlip_uploadFileDirectly(
-  userName,
-  fileType,
-  file,
-  filename
-) {
-  console.log(file);
-  if (!game.user.isGM) {
-    ui.notifications.warn("Hanya GM yang dapat mengupload file.");
-    return false;
-  }
-  const allowedExtensions = {
-    Token: ["webp", "png", "jpg", "jpeg"],
-    Art: ["webp", "png", "jpg", "jpeg"],
-    Audio: ["ogg", "mp3"],
-  };
-
-  const originalExt = file.name.split(".").pop().toLowerCase();
-  if (!allowedExtensions[fileType]) {
-    ui.notifications.error(`Unknown fileType "${fileType}".`);
-    return false;
-  }
-  if (!allowedExtensions[fileType].includes(originalExt)) {
-    ui.notifications.error(
-      `Unsupported file type for category "${fileType}". Allowed types: ${allowedExtensions[
-        fileType
-      ]
-        .join(", ")
-        .toUpperCase()}.`
-    );
-    return false;
-  }
-  const finalFilename = filename.endsWith(`.${originalExt}`)
-    ? filename
-    : `${filename}.${originalExt}`;
-  const folderPath = `${heraldFlip_folderName}/${userName}/${fileType}`;
-  try {
-    const renamedFile = new File([file], finalFilename, { type: file.type });
-
-    const result = await FilePicker.upload("data", folderPath, renamedFile);
-    if (result.path) {
-      ui.notifications.info(`Upload Success ${result.path}`);
-
-      return true;
-    }
-  } catch (err) {
-    console.error("Upload gagal:", err);
-    ui.notifications.error("Upload file gagal.");
-  }
-
-  return false;
-}
-
-async function heraldFlip_sendFileToGM(userName, fileType, file, name) {
-  const base64File = await helper.heraldFlip_fileToBase64(file);
-  const ext = file.name.split(".").pop();
-  const finalName = name.endsWith(`.${ext}`) ? name : `${name}.${ext}`;
-  await heraldFlip_socket.executeAsGM("saveFileHeraldFlip", {
-    userName,
-    fileType,
-    fileName: finalName,
-    base64: base64File,
-  });
 }
 
 export { heraldFlip_renderAccessButton };

@@ -118,6 +118,18 @@ async function heraldFlip_showDialogFlip() {
       });
     }
 
+    const dialogElement = app.element[0];
+
+    const contentElement = dialogElement.querySelector(".window-content");
+    if (contentElement) {
+      contentElement.style.backgroundColor = "rgba(0, 0, 0, 0.3)";
+      contentElement.style.color = "white";
+      contentElement.style.backgroundImage = "none";
+      contentElement.style.backgroundSize = "cover";
+      contentElement.style.backgroundRepeat = "no-repeat";
+      contentElement.style.backgroundPosition = "center";
+    }
+
     const typeButton = document.querySelectorAll(
       ".heraldFlip-typeSelectButton"
     );
@@ -324,8 +336,8 @@ async function heraldFlip_renderViewFlipMiddleToken() {
       .querySelectorAll(".heraldFlip-flipTokenEditButton")
       .forEach((btn, index) => {
         btn.addEventListener("click", async () => {
-          // const pageToEdit = pages[index];
-          // await heraldFlip_editTokenFlip(pageToEdit);
+          const pageToEdit = pages[index];
+          await heraldFlip_editTokenFlip(pageToEdit);
         });
       });
 
@@ -352,123 +364,147 @@ async function heraldFlip_renderViewFlipMiddleToken() {
   }
 }
 
-// async function heraldFlip_editTokenFlip(page) {
-//   const content = page.text.content;
+async function heraldFlip_editTokenFlip(page) {
+  const content = page.text.content;
 
-//   const extractValue = (label) => {
-//     const regex = new RegExp(`<strong>${label} :<\\/strong>\\s*(.*?)<\\/p>`);
-//     const match = content.match(regex);
-//     return match ? match[1] : "";
-//   };
+  const extractValue = (label) => {
+    const regex = new RegExp(`<strong>${label} :<\\/strong>\\s*(.*?)<\\/p>`);
+    const match = content.match(regex);
+    return match ? match[1] : "";
+  };
 
-//   const currentName = extractValue("Profile Name");
-//   const currentActorId = extractValue("ActorId");
-//   const currentActorName = extractValue("Actor Name");
+  const currentName = extractValue("Profile Name");
+  const currentActorId = extractValue("ActorId");
+  const currentActorName = extractValue("Actor Name");
 
-//   const dialog = new Dialog({
-//     title: "Edit Token Profile",
-//     content: `
-//       <form>
-//         <div class="form-group">
-//           <label for="edit-profile-name">Profile Name:</label>
-//           <input type="text" id="edit-profile-name" name="profileName" value="${currentName}" />
-//         </div>
-//         <div>Select a Character:</div>
-//         <div class="form-group">
-//           <div class="heraldFlip-gridActorTokenFlip">
-//             ${game.actors
-//               .filter(
-//                 (actor) =>
-//                   actor.type === "character" &&
-//                   actor.ownership[game.user.id] >=
-//                     CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER
-//               )
-//               .map(
-//                 (actor) => `
-//                 <div class="heraldFlip-selectActorTokenFlip ${
-//                   actor.id === currentActorId ? "selected" : ""
-//                 }" data-id="${actor.id}">
-//                   <div class="heraldFlip-imgActorTokenFlipWrapper">
-//                     <img src="${actor.img}" alt="${actor.name}" />
-//                     <div class="heraldFlip-labelActorTokenFlip">${
-//                       actor.name
-//                     }</div>
-//                   </div>
-//                 </div>
-//               `
-//               )
-//               .join("")}
-//           </div>
-//         </div>
-//       </form>
-//     `,
-//     buttons: {},
-//     render: (html) => {
-//       const confirmButton = $(
-//         `<button type="button" class="dialog-button">Save</button>`
-//       );
-//       const cancelButton = $(
-//         `<button type="button" class="dialog-button">Cancel</button>`
-//       );
-//       html
-//         .closest(".app")
-//         .find(".dialog-buttons")
-//         .append(confirmButton, cancelButton);
+  const dialog = new Dialog({
+    title: "Edit Token Profile",
+    content: `
+      <form>
+        <div class="form-group">
+          <label for="heraldFlip-editProfileNameInput">Profile Name:</label>
+          <input type="text" id="heraldFlip-editProfileNameInput" class="heraldFlip-editProfileNameInput" name="profileName" value="${currentName}" style="color:white !important" />
+        </div>
+        <div>Select a Character:</div>
+        <div class="form-group">
+          <div class="heraldFlip-gridActorTokenFlip">
+            ${game.actors
+              .filter(
+                (actor) =>
+                  actor.type === "character" &&
+                  actor.ownership[game.user.id] >=
+                    CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER
+              )
+              .map(
+                (actor) => `
+                <div class="heraldFlip-selectActorTokenFlip ${
+                  actor.id === currentActorId ? "selected" : ""
+                }" data-id="${actor.id}">
+                  <div class="heraldFlip-imgActorTokenFlipWrapper">
+                    <img src="${actor.img}" alt="${actor.name}" />
+                    <div class="heraldFlip-labelActorTokenFlip">${
+                      actor.name
+                    }</div>
+                  </div>
+                </div>
+              `
+              )
+              .join("")}
+          </div>
+        </div>
+      </form>
+    `,
+    buttons: {},
+    render: (html) => {
+      const confirmButton = $(
+        `<button type="button" class="dialog-button">Save</button>`
+      );
+      const cancelButton = $(
+        `<button type="button" class="dialog-button">Cancel</button>`
+      );
+      html
+        .closest(".app")
+        .find(".dialog-buttons")
+        .append(confirmButton, cancelButton);
 
-//       html.find(".heraldFlip-selectActorTokenFlip").on("click", function () {
-//         html.find(".heraldFlip-selectActorTokenFlip").removeClass("selected");
-//         this.classList.add("selected");
-//       });
+      html.find(".heraldFlip-selectActorTokenFlip").on("click", function () {
+        html.find(".heraldFlip-selectActorTokenFlip").removeClass("selected");
+        this.classList.add("selected");
+      });
 
-//       cancelButton.on("click", () => dialog.close());
+      cancelButton.on("click", () => dialog.close());
 
-//       confirmButton.on("click", async () => {
-//         const name = html.find('[name="profileName"]').val()?.trim();
-//         const selected = html.find(
-//           ".heraldFlip-selectActorTokenFlip.selected"
-//         )[0];
-//         const actorId = selected?.dataset?.id;
+      confirmButton.on("click", async () => {
+        const name = html.find('[name="profileName"]').val()?.trim();
+        const selected = html.find(
+          ".heraldFlip-selectActorTokenFlip.selected"
+        )[0];
+        const actorId = selected?.dataset?.id;
 
-//         if (!name || !actorId) {
-//           ui.notifications.warn(
-//             "Please fill in both Profile Name and Character."
-//           );
-//           return;
-//         }
+        if (!name || !actorId) {
+          ui.notifications.warn(
+            "Please fill in both Profile Name and Character."
+          );
+          return;
+        }
 
-//         const actor = game.actors.get(actorId);
-//         if (!actor) {
-//           ui.notifications.error("Selected actor not found.");
-//           return;
-//         }
+        const actor = game.actors.get(actorId);
+        if (!actor) {
+          ui.notifications.error("Selected actor not found.");
+          return;
+        }
 
-//         let newContent = content
-//           .replace(
-//             /(<strong>Profile Name :<\/strong>\s*)(.*?)<\/p>/,
-//             `$1${name}</p>`
-//           )
-//           .replace(
-//             /(<strong>ActorId :<\/strong>\s*)(.*?)<\/p>/,
-//             `$1${actor.id}</p>`
-//           )
-//           .replace(
-//             /(<strong>Actor Name :<\/strong>\s*)(.*?)<\/p>/,
-//             `$1${actor.name}</p>`
-//           );
+        let newContent = content
+          .replace(
+            /(<strong>Profile Name :<\/strong>\s*)(.*?)<\/p>/,
+            `$1${name}</p>`
+          )
+          .replace(
+            /(<strong>ActorId :<\/strong>\s*)(.*?)<\/p>/,
+            `$1${actor.id}</p>`
+          )
+          .replace(
+            /(<strong>Actor Name :<\/strong>\s*)(.*?)<\/p>/,
+            `$1${actor.name}</p>`
+          );
 
-//         await page.update({
-//           name: name,
-//           "text.content": newContent,
-//         });
+        await page.update({
+          name: name,
+          "text.content": newContent,
+        });
 
-//         dialog.close();
-//         await heraldFlip_renderViewFlipMiddleToken();
-//       });
-//     },
-//   });
+        dialog.close();
+        await heraldFlip_renderViewFlipMiddleToken();
+      });
+    },
+  });
 
-//   dialog.render(true);
-// }
+  dialog.render(true);
+  Hooks.once("renderDialog", async (app) => {
+   
+
+    const dialogElement = app.element[0];
+
+    const contentElement = dialogElement.querySelector(".window-content");
+    if (contentElement) {
+      contentElement.style.backgroundColor = "rgba(0, 0, 0, 0.3)";
+      contentElement.style.color = "white";
+      contentElement.style.backgroundImage = "none";
+      contentElement.style.backgroundSize = "cover";
+      contentElement.style.backgroundRepeat = "no-repeat";
+      contentElement.style.backgroundPosition = "center";
+    }
+
+    const buttons = dialogElement.querySelectorAll(
+      ".dialog-buttons .dialog-button"
+    );
+
+    buttons.forEach((button) => {
+      button.style.color = "white";
+      button.style.border = "1px solid white";
+    });
+  });
+}
 
 async function heraldFlip_renderViewTokenFlipBottom() {
   let flipBottom = document.getElementById("heraldFlip-dialogFlipBottom");
@@ -481,7 +517,7 @@ async function heraldFlip_renderViewTokenFlipBottom() {
   let playerCharacterOptions = playerCharacters
     .map((actor) => {
       const isSelected = selectedActor?.id === actor.id ? "selected" : "";
-      return `<option value="${actor.id}" ${isSelected} style="">
+      return `<option value="${actor.id}" ${isSelected} style="background-color: #121212; color: white;">
               ${actor.name}
             </option>`;
     })
@@ -489,22 +525,28 @@ async function heraldFlip_renderViewTokenFlipBottom() {
   if (flipBottom) {
     flipBottom.innerHTML = `
     <div id="heraldFlip-dialogFlipBottomTop" class="heraldFlip-dialogFlipBottomTop">
-        <div style="width:100%;">
-          <select id="heraldFlip-tokenChangeSelected" style="width:100%;background-color: #d6d2cd;" >
+        <div style="display: flex;align-items: center;  justify-content: space-between; width: 100%; background-color:#121212;">
+          <select id="heraldFlip-tokenChangeSelected" style="flex: 1;color: white !important;" >
           ${playerCharacterOptions}
           </select>
         </div>
-       <div id="heraldFlip-tokenStampLink" class="heraldFlip-tokenStampLink" style="cursor:pointer;">
-         <img src="/modules/herald-flip/assets/images/tokenstamp_icon.png" alt="" class="" style="width:30px; border:none;" />
-      </div>
+       <div id="heraldFlip-tokenStampLink" class="heraldFlip-tokenStampLink " style="cursor:pointer;">
+          <img src="/modules/herald-flip/assets/images/tokenstamp_icon.png" alt="" style="width:30px; border:none;" />
+          <span class="heraldFlip-tokenStampTooltip">Token Stamp</span>
+        </div>
+
     </div>
     <div id="heraldFlip-dialogFlipBottomBot" class="heraldFlip-dialogFlipBottomBot">
       <div class="heraldFlip-searchFlipTokenContainer">
           <input type="text" id="heraldFlip-searchFlipTokenInput" class="heraldFlip-searchFlipTokenInput" placeholder="Search..." />
       </div>
-      <div id="heraldFlip-addAssetTokenFlip" class="heraldFlip-addAssetTokenFlip">
-        <i class="fa-solid fa-plus"></i>
+      <div class="heraldFlip-addAssetTokenFlipWrapper">
+        <div id="heraldFlip-addAssetTokenFlip" class="heraldFlip-addAssetTokenFlip">
+          <i class="fa-solid fa-plus"></i>
+        </div>
+        <span class="heraldFlip-addAseetTokenFlipTooltip">Add Profile</span>
       </div>
+     
     </div>
     `;
 
@@ -547,12 +589,12 @@ async function heraldFlip_addAssetTokenFlip() {
     content: `
             <form>
               <div class="form-group">
-                <label for="profile-name">Profile Name:</label>
-                <input type="text" id="profile-name" name="profileName" placeholder="Enter name"/>
+                <label for="heraldFlip-profileNameInput">Profile Name:</label>
+                <input type="text" id="heraldFlip-profileNameInput" class="heraldFlip-profileNameInput" name="profileName" placeholder="Enter name" style="color:white !important;"/>
               </div>
               <div class="form-group">
-                <label for="profile-file">Upload File:</label>
-                <input type="file" id="profile-file" name="profileFile"/>
+                <label for="heraldFlip-profileFileInput">Upload File:</label>
+                <input type="file" id="heraldFlip-profileFileInput" name="profileFile"/>
               </div>
               <div>Select a Character:</div>
               <div class="form-group">
@@ -646,19 +688,41 @@ async function heraldFlip_addAssetTokenFlip() {
   });
 
   dialog.render(true);
+  Hooks.once("renderDialog", async (app) => {
+    const dialogElement = app.element[0];
 
-  setTimeout(() => {
-    document
-      .querySelectorAll(".heraldFlip-selectActorTokenFlip")
-      .forEach((box) => {
-        box.addEventListener("click", () => {
-          document
-            .querySelectorAll(".heraldFlip-selectActorTokenFlip")
-            .forEach((b) => b.classList.remove("selected"));
-          box.classList.add("selected");
+    const contentElement = dialogElement.querySelector(".window-content");
+    if (contentElement) {
+      contentElement.style.backgroundColor = "rgba(0, 0, 0, 0.3)";
+      contentElement.style.color = "white";
+      contentElement.style.backgroundImage = "none";
+      contentElement.style.backgroundSize = "cover";
+      contentElement.style.backgroundRepeat = "no-repeat";
+      contentElement.style.backgroundPosition = "center";
+    }
+
+    const buttons = dialogElement.querySelectorAll(
+      ".dialog-buttons .dialog-button"
+    );
+
+    buttons.forEach((button) => {
+      button.style.color = "white";
+      button.style.border = "1px solid white";
+    });
+
+    setTimeout(() => {
+      document
+        .querySelectorAll(".heraldFlip-selectActorTokenFlip")
+        .forEach((box) => {
+          box.addEventListener("click", () => {
+            document
+              .querySelectorAll(".heraldFlip-selectActorTokenFlip")
+              .forEach((b) => b.classList.remove("selected"));
+            box.classList.add("selected");
+          });
         });
-      });
-  }, 100);
+    }, 100);
+  });
 }
 async function heraldFlip_addTokentoPages(name, type, actorid, ext) {
   const user = game.user;

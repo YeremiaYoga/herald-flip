@@ -39,9 +39,14 @@
     width: 100%;
 }
 
-.heraldFlip-typeSelectButton.active {
-    background-color: #666666;
+.heraldFlip-typeSelectButton {
+    background-color: #121212;
     color: #fff;
+    border: 1px solid #5a5a5a;
+}
+
+.heraldFlip-typeSelectButton.active {
+    background-color: #333333;
 
 }
 
@@ -68,6 +73,31 @@
 
 .heraldFlip-tokenStampLink {
     margin-left: auto;
+    position: relative;
+    display: inline-block;
+}
+
+.heraldFlip-tokenStampTooltip {
+    visibility: hidden;
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    position: absolute;
+    z-index: 999;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.heraldFlip-tokenStampLink:hover .heraldFlip-tokenStampTooltip {
+    visibility: visible;
+    opacity: 1;
 }
 
 .heraldFlip-dialogFlipBottomBot {
@@ -78,15 +108,15 @@
 
 .heraldFlip-searchFlipTokenContainer {
     width: 100%;
-    background-color: #d6d2cd;
+    background-color: #121212;
     border-radius: 8px;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
 }
 
 .heraldFlip-searchFlipTokenInput {
-    background-color: #d6d2cd;
-    color: #333;
-    border: 1px solid #ccc;
+    background-color: #121212;
+    color: white !important;
+    border: 1px solid #5f5f5f;
     padding: 6px 10px;
     border-radius: 6px;
     width: 100%;
@@ -94,20 +124,58 @@
     font-size: 14px;
 }
 
+.heraldFlip-addAssetTokenFlipWrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.heraldFlip-addAseetTokenFlipTooltip {
+    visibility: hidden;
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    position: absolute;
+    z-index: 999;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.heraldFlip-addAssetTokenFlipWrapper:hover .heraldFlip-addAseetTokenFlipTooltip {
+    visibility: visible;
+    opacity: 1;
+}
+
 
 .heraldFlip-addAssetTokenFlip {
     width: 30px;
     height: 30px;
-    border: 2px #333 solid;
+    border: 2px white solid;
     font-size: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
     margin-left: auto;
     cursor: pointer;
-    color: #333;
+    color: white;
 }
 
+
+.heraldFlip-profileNameInput::placeholder {
+    color: white;
+    opacity: 1;
+}
+
+.heraldFlip-editProfileNameInput::placeholder {
+    color: white;
+    opacity: 1;
+}
 
 .heraldFlip-dialogFlipMiddle {
     margin-top: 10px;
@@ -149,7 +217,7 @@
 
 .heraldFlip-flipTokenActorName {
     font-size: 10px;
-    color: #5a5a5a;
+    color: #b9b9b9;
 }
 
 .heraldFlip-flipTokenTransform,
@@ -158,6 +226,9 @@
     line-height: 20px;
     width: 50%;
     cursor: pointer;
+    background-color: #121212;
+    color: #fff;
+    border: 1px solid #5a5a5a;
 }
 
 
@@ -179,33 +250,33 @@
 }
 
 .heraldFlip-flipTokenOpsiContainer {
-  position: relative;
-  display: inline-block;
-  cursor: pointer;
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
 }
 
 .heraldFlip-flipTokenOpsiTooltip {
-  visibility: hidden;
-  width: max-content;
-  background-color: black;
-  color: #fff;
-  text-align: center;
-  padding: 4px 8px;
-  border-radius: 4px;
-  position: absolute;
-  z-index: 10;
-  bottom: 125%; /* Bisa ubah ke top/left/right sesuai kebutuhan */
-  left: 50%;
-  transform: translateX(-50%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  white-space: nowrap;
-  font-size: 0.75rem;
+    visibility: hidden;
+    width: max-content;
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    padding: 4px 8px;
+    border-radius: 4px;
+    position: absolute;
+    z-index: 10;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    white-space: nowrap;
+    font-size: 0.75rem;
 }
 
 .heraldFlip-flipTokenOpsiContainer:hover .heraldFlip-flipTokenOpsiTooltip {
-  visibility: visible;
-  opacity: 1;
+    visibility: visible;
+    opacity: 1;
 }
 
 
@@ -242,7 +313,6 @@
     position: relative;
     width: 100%;
     padding-top: 100%;
-    /* square box */
     background: #333;
 }
 

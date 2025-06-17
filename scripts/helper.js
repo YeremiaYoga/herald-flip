@@ -1,3 +1,5 @@
+
+
 async function heraldFLip_createFolder(folder) {
   try {
     await FilePicker.createDirectory("data", folder);
@@ -67,7 +69,7 @@ async function heraldFlip_createFolderJournal(user) {
 }
 
 async function heraldFlip_createFolderPlaylist(user) {
-  let audioCategory = [
+  const audioThemes = [
     "Chill",
     "Tense",
     "Happy",
@@ -83,20 +85,10 @@ async function heraldFlip_createFolderPlaylist(user) {
     "Heroic",
     "Hopeless",
   ];
-  const folders = await game.folders.filter((f) => f.type === "Playlist");
-  let heraldFlipFolder = "";
-  let playerFolder = "";
-  for (let folder of folders) {
-    if (folder.name == "Herald Flip") {
-      heraldFlipFolder = folder;
-    }
-    if (
-      (folder.name == user.name && folder.folder.name == "Herald Flip") ||
-      (folder.name == user.name && folder.folder.id == heraldFlipFolder.id)
-    ) {
-      playerFolder = folder;
-    }
-  }
+
+  let heraldFlipFolder = game.folders.find(
+    (f) => f.name === "Herald Flip" && f.type === "Playlist" && !f.folder
+  );
   if (!heraldFlipFolder) {
     heraldFlipFolder = await Folder.create({
       name: "Herald Flip",
@@ -104,14 +96,32 @@ async function heraldFlip_createFolderPlaylist(user) {
     });
   }
 
-  if (!playerFolder) {
-    // const hexColor = `${user.color.toString(16).padStart(6, "0")}`;
-    playerFolder = await Folder.create({
-      name: user.name,
-      type: "JournalEntry",
-      folder: heraldFlipFolder.id,
-      // color: hexColor,
-    });
+  for (const theme of audioThemes) {
+    let themeFolder = game.folders.find(
+      (f) =>
+        f.name === theme &&
+        f.type === "Playlist" &&
+        f.folder?.id === heraldFlipFolder.id
+    );
+
+    if (!themeFolder) {
+      themeFolder = await Folder.create({
+        name: theme,
+        type: "Playlist",
+        folder: heraldFlipFolder.id,
+      });
+    }
+
+    const existingPlaylist = game.playlists.find(
+      (p) => p.name === user.name && p.folder?.id === themeFolder.id
+    );
+
+    if (!existingPlaylist) {
+      await Playlist.create({
+        name: user.name,
+        folder: themeFolder.id,
+      });
+    }
   }
 }
 
@@ -195,30 +205,11 @@ async function heraldFlip_uploadFileDirectly(
   return false;
 }
 
-async function heraldFlip_sendFileToGM(
-  userName,
-  fileType,
-  file,
-  name,
-  folderPath
-) {
-  const base64File = await helper.heraldFlip_fileToBase64(file);
-  const ext = file.name.split(".").pop();
-  const finalName = name.endsWith(`.${ext}`) ? name : `${name}.${ext}`;
-  await heraldFlip_socket.executeAsGM("saveFileHeraldFlip", {
-    userName,
-    fileType,
-    fileName: finalName,
-    base64: base64File,
-    folderPath,
-  });
-}
-
 export {
   heraldFLip_createFolder,
-  heraldFlip_fileToBase64,
   heraldFlip_createFolderJournal,
   heraldFlip_extractDataFromPage,
+  heraldFlip_fileToBase64,
   heraldFlip_uploadFileDirectly,
-  heraldFlip_sendFileToGM,
+  heraldFlip_createFolderPlaylist,
 };

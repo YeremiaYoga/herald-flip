@@ -1,5 +1,5 @@
 import * as helper from "./helper.js";
-
+import * as flip from "./heraldFlip.js";
 let heraldFlip_audioTheme = [
   "Chill",
   "Tense",
@@ -16,12 +16,21 @@ let heraldFlip_audioTheme = [
   "Heroic",
   "Hopeless",
 ];
+let heraldFlip_audioSocket;
+Hooks.once("socketlib.ready", () => {
+  heraldFlip_audioSocket = socketlib.registerModule("herald-flip");
+
+  heraldFlip_audioSocket.register(
+    "saveAudioToPlaylist",
+    async ({ name, filePath, category, userName }) => {
+      await heraldFlip_addAudioToPlaylist(name, filePath, category, userName);
+    }
+  );
+});
 
 async function heraldFlip_createAllThemeAudioFolder(folderName, user) {
   for (let theme of heraldFlip_audioTheme) {
-    helper.heraldFLip_createFolder(
-      `${folderName}/${user.name}/Audio/${theme}`
-    );
+    helper.heraldFLip_createFolder(`${folderName}/${user.name}/Audio/${theme}`);
   }
 }
 
@@ -75,14 +84,15 @@ async function heraldFlip_renderViewAudioFlipBottom() {
 }
 
 async function heraldFlip_addAssetAudioFlip() {
-  const categoryOptions = heraldFlip_audioTheme
+  const limitedThemes = heraldFlip_audioTheme; // Kalau semua kategori
+  const categoryOptions = limitedThemes
     .map((cat, i) => {
       const checked = i === 0 ? "checked" : "";
       return `
-        <label style="margin-right: 10px;">
-          <input type="radio" name="audioCategory" value="${cat}" ${checked}/> ${cat}
-        </label>
-      `;
+      <label style="margin: 5px; display: inline-block; width: 18%;">
+        <input type="radio" name="audioCategory" value="${cat}" /> ${cat}
+      </label>
+    `;
     })
     .join("");
   let dialog = new Dialog({
@@ -91,14 +101,14 @@ async function heraldFlip_addAssetAudioFlip() {
             <form>
               <div class="form-group">
                 <label for="heraldFlip-audioNameInput">Audio/Music Name:</label>
-                <input type="text" id="heraldFlip-audioNameInput" class="heraldFlip-audioNameInput" name="profileName" placeholder="Enter name" style=""/>
+                <input type="text" id="heraldFlip-audioNameInput" class="heraldFlip-audioNameInput" name="profileName" placeholder="Enter name" style="color:white !important;"/>
               </div>
               <div class="form-group">
                 <label for="heraldFlip-audioFileInput">Upload File:</label>
                 <input type="file" id="heraldFlip-audioFileInput" name="profileFile"/>
               </div>
               <div>Theme:</div>
-              <div class="form-group">
+              <div class="heraldFlip-audioThemeCategoryContainer">
                 ${categoryOptions}
               </div>
             </form>
@@ -136,6 +146,7 @@ async function heraldFlip_addAssetAudioFlip() {
         }
 
         let folderPath = `Herald's-Flip/${userName}/Audio/${category}`;
+        let filePath = `${folderPath}/${file.name}`;
         if (game.user.isGM) {
           await helper.heraldFlip_uploadFileDirectly(
             userName,
@@ -145,7 +156,7 @@ async function heraldFlip_addAssetAudioFlip() {
             folderPath
           );
         } else {
-          await helper.heraldFlip_sendFileToGM(
+          await flip.heraldFlip_sendFileToGM(
             userName,
             "Audio",
             file,
@@ -154,12 +165,13 @@ async function heraldFlip_addAssetAudioFlip() {
           );
         }
 
-        // await heraldFlip_addTokentoPages(
-        //   name,
-        //   heraldFlip_typeSelected,
-        //   actorId,
-        //   ext
-        // );
+        await heraldFlip_audioSocket.executeAsGM("saveAudioToPlaylist", {
+          name,
+          filePath,
+          category,
+          userName,
+        });
+
         dialog.close();
         // setTimeout(heraldFlip_renderViewFlipMiddleToken, 500);
       });
@@ -168,24 +180,59 @@ async function heraldFlip_addAssetAudioFlip() {
 
   dialog.render(true);
   Hooks.once("renderDialog", async (app) => {
-    // const dialogElement = app.element[0];
-    // const contentElement = dialogElement.querySelector(".window-content");
-    // if (contentElement) {
-    //   contentElement.style.backgroundColor = "rgba(0, 0, 0, 0.3)";
-    //   contentElement.style.color = "white";
-    //   contentElement.style.backgroundImage = "none";
-    //   contentElement.style.backgroundSize = "cover";
-    //   contentElement.style.backgroundRepeat = "no-repeat";
-    //   contentElement.style.backgroundPosition = "center";
-    // }
-    // const buttons = dialogElement.querySelectorAll(
-    //   ".dialog-buttons .dialog-button"
-    // );
-    // buttons.forEach((button) => {
-    //   button.style.color = "white";
-    //   button.style.border = "1px solid white";
-    // });
+    const dialogElement = app.element[0];
+    const contentElement = dialogElement.querySelector(".window-content");
+    if (contentElement) {
+      contentElement.style.backgroundColor = "rgba(0, 0, 0, 0.3)";
+      contentElement.style.color = "white";
+      contentElement.style.backgroundImage = "none";
+      contentElement.style.backgroundSize = "cover";
+      contentElement.style.backgroundRepeat = "no-repeat";
+      contentElement.style.backgroundPosition = "center";
+    }
+    const buttons = dialogElement.querySelectorAll(
+      ".dialog-buttons .dialog-button"
+    );
+    buttons.forEach((button) => {
+      button.style.color = "white";
+      button.style.border = "1px solid white";
+    });
   });
+}
+
+async function heraldFlip_addAudioToPlaylist(
+  audioName,
+  filePath,
+  category,
+  userName
+) {
+  const heraldFlipFolder = game.folders.find(
+    (f) => f.name === "Herald Flip" && f.type === "Playlist" && !f.folder
+  );
+  if (!heraldFlipFolder)
+    return ui.notifications.error("Herald Flip folder not found.");
+  const themeFolder = game.folders.find(
+    (f) =>
+      f.name === category &&
+      f.folder?.id === heraldFlipFolder.id &&
+      f.type === "Playlist"
+  );
+  if (!themeFolder)
+    return ui.notifications.error(`Theme folder "${category}" not found.`);
+  const userPlaylist = game.playlists.find(
+    (p) => p.name === userName && p.folder?.id === themeFolder.id
+  );
+  if (!userPlaylist)
+    return ui.notifications.error(`Playlist for user "${userName}" not found.`);
+
+  await PlaylistSound.create(
+    {
+      name: audioName,
+      path: filePath,
+      volume: 0.8,
+    },
+    { parent: userPlaylist }
+  );
 }
 
 export {

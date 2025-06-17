@@ -5,6 +5,7 @@ import * as art from "./art.js";
 let heraldFlip_folderName = `Herald's-Flip`;
 let heraldFlip_typeSelected = "Token";
 let heraldFlip_linkTokenStamp = "https://rolladvantage.com/tokenstamp/";
+let heraldFlip_filterToken = [];
 
 let heraldFlip_socket;
 Hooks.once("socketlib.ready", () => {
@@ -13,6 +14,7 @@ Hooks.once("socketlib.ready", () => {
     helper.heraldFLip_createFolder(heraldFlip_folderName);
     await heraldFlip_createFolderPlayer(user);
     await helper.heraldFlip_createFolderJournal(user);
+    await helper.heraldFlip_createFolderPlaylist(user);
   });
 
   heraldFlip_socket.register("saveFileHeraldFlip", async (data) => {
@@ -199,6 +201,11 @@ async function heraldFlip_renderViewFlipMiddleToken() {
     if (!data.profileName.toLowerCase().includes(searchValue)) {
       continue;
     }
+    if (
+      heraldFlip_filterToken.length > 0 &&
+      !heraldFlip_filterToken.includes(data.actorId)
+    )
+      continue;
     arrToken += `
     <div class="heraldFlip-flipTokenContainer">
       <div class="heraldFlip-flipTokenLeft">
@@ -394,20 +401,22 @@ async function heraldFlip_editTokenFlip(page) {
           <input type="text" id="heraldFlip-editProfileNameInput" class="heraldFlip-editProfileNameInput" name="profileName" value="${currentName}" style="color:white !important" />
         </div>
         <div>Select a Character:</div>
+          <input type="text" id="heraldFlip-actorSearchInput" placeholder="Search character..." style="width: 100%; margin-bottom: 8px; padding: 4px; color: white; border: 1px solid #555;" />
         <div class="form-group">
           <div class="heraldFlip-gridActorTokenFlip">
             ${game.actors
               .filter(
                 (actor) =>
-                  actor.type === "character" &&
                   actor.ownership[game.user.id] >=
-                    CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER
+                  CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER
               )
               .map(
                 (actor) => `
                 <div class="heraldFlip-selectActorTokenFlip ${
                   actor.id === currentActorId ? "selected" : ""
-                }" data-id="${actor.id}">
+                }" data-id="${
+                  actor.id
+                }" data-name="${actor.name.toLowerCase()}">
                   <div class="heraldFlip-imgActorTokenFlipWrapper">
                     <img src="${actor.img}" alt="${actor.name}" />
                     <div class="heraldFlip-labelActorTokenFlip">${
@@ -438,6 +447,14 @@ async function heraldFlip_editTokenFlip(page) {
       html.find(".heraldFlip-selectActorTokenFlip").on("click", function () {
         html.find(".heraldFlip-selectActorTokenFlip").removeClass("selected");
         this.classList.add("selected");
+      });
+
+      html.find("#heraldFlip-actorSearchInput").on("input", function () {
+        const search = this.value.trim().toLowerCase();
+        html.find(".heraldFlip-selectActorTokenFlip").each(function () {
+          const name = this.dataset.name;
+          this.style.display = name.includes(search) ? "block" : "none";
+        });
       });
 
       cancelButton.on("click", () => dialog.close());
@@ -528,6 +545,54 @@ async function heraldFlip_renderViewTokenFlipBottom() {
             </option>`;
     })
     .join("");
+
+  const folders = game.folders.filter((f) => f.type === "JournalEntry");
+  const heraldFlipFolder = folders.find((f) => f.name === "Herald Flip");
+
+  const playerFolder = folders.find(
+    (f) => f.name === user.name && f.folder?.id === heraldFlipFolder?.id
+  );
+  const flipJournal = game.journal.find(
+    (j) => j.folder?.id === playerFolder?.id && j.name === "Token"
+  );
+  let pages = [];
+  if (flipJournal) {
+    pages = flipJournal.pages.contents;
+  }
+  let listFilter = "";
+  let matchingPages = [];
+
+  const uniqueActorMap = new Map();
+
+  for (const page of pages) {
+    const data = await helper.heraldFlip_extractDataFromPage(page);
+    const actor = game.actors.get(data.actorId);
+    if (actor && !uniqueActorMap.has(data.actorId)) {
+      uniqueActorMap.set(data.actorId, { page, data, actor });
+    }
+  }
+
+  listFilter = [...uniqueActorMap.values()]
+    .map(({ page, data, actor }) => {
+      return `
+      <label class="heraldFlip-filterTokenProfile" title="${data.profileName}" style="display: flex; align-items: center; cursor: pointer; margin: 0 10px;">
+       <input 
+  type="checkbox" 
+  class="heraldFlip-tokenFilterCheckbox" 
+  value="${page.id}" 
+  data-actor-id="${actor.id}"
+  style="margin-bottom: 5px;" 
+/>
+        <img 
+          src="${actor.img}" 
+          alt="${data.profileName}" 
+          style="width: 25px; height: 25px; border-radius: 50%; border: 1px solid white; margin-bottom: 5px;"
+        />
+      </label>
+    `;
+    })
+    .join("");
+
   if (flipBottom) {
     flipBottom.innerHTML = `
     <div id="heraldFlip-dialogFlipBottomTop" class="heraldFlip-dialogFlipBottomTop">
@@ -546,10 +611,9 @@ async function heraldFlip_renderViewTokenFlipBottom() {
           <input type="text" id="heraldFlip-searchFlipTokenInput" class="heraldFlip-searchFlipTokenInput" placeholder="Search..." />
       </div>
       <div class="heraldFlip-filterTokenFlipWrapper">
-        <div class="heraldFlip-filterTokenFlip">
+        <div id="heraldFlip-filterTokenFlip" class="heraldFlip-filterTokenFlip">
           <i class="fa-solid fa-filter"></i>
         </div>
-
       </div>
       <div class="heraldFlip-addAssetFlipWrapper">
         <div id="heraldFlip-addAssetTokenFlip" class="heraldFlip-addAssetFlip">
@@ -557,9 +621,44 @@ async function heraldFlip_renderViewTokenFlipBottom() {
         </div>
         <span class="heraldFlip-addAseetFlipTooltip">Add Profile</span>
       </div>
-     
+      <div id="heraldFlip-filterTokenFlipContainer" class="heraldFlip-filterTokenFlipContainer" style="display:none;">
+        <div class="heraldFlip-filterTokenFlipMenu">
+          ${listFilter}
+        </div>
+      </div>
     </div>
     `;
+
+    document
+      .querySelectorAll(".heraldFlip-tokenFilterCheckbox")
+      .forEach((checkbox) => {
+        checkbox.addEventListener("change", () => {
+          const checked = [
+            ...document.querySelectorAll(
+              ".heraldFlip-tokenFilterCheckbox:checked"
+            ),
+          ];
+          heraldFlip_filterToken = checked.map((cb) => cb.dataset.actorId);
+          console.log("Filtered actor IDs:", heraldFlip_filterToken);
+
+          heraldFlip_renderViewFlipMiddleToken();
+        });
+      });
+
+    document
+      .getElementById("heraldFlip-filterTokenFlip")
+      ?.addEventListener("click", () => {
+        console.log("test");
+        const filterMenu = document.getElementById(
+          "heraldFlip-filterTokenFlipContainer"
+        );
+        if (filterMenu) {
+          filterMenu.style.display =
+            filterMenu.style.display === "none" || !filterMenu.style.display
+              ? "block"
+              : "none";
+        }
+      });
 
     document
       .getElementById("heraldFlip-tokenChangeSelected")
@@ -692,7 +791,7 @@ async function heraldFlip_addAssetTokenFlip() {
             folderPath
           );
         } else {
-          await helper.heraldFlip_sendFileToGM(
+          await heraldFlip_sendFileToGM(
             userName,
             heraldFlip_typeSelected,
             file,
@@ -790,4 +889,23 @@ async function heraldFlip_addTokentoPages(name, type, actorid, ext) {
   }
 }
 
-export { heraldFlip_renderAccessButton };
+async function heraldFlip_sendFileToGM(
+  userName,
+  fileType,
+  file,
+  name,
+  folderPath
+) {
+  const base64File = await helper.heraldFlip_fileToBase64(file);
+  const ext = file.name.split(".").pop();
+  const finalName = name.endsWith(`.${ext}`) ? name : `${name}.${ext}`;
+  await heraldFlip_socket.executeAsGM("saveFileHeraldFlip", {
+    userName,
+    fileType,
+    fileName: finalName,
+    base64: base64File,
+    folderPath,
+  });
+}
+
+export { heraldFlip_renderAccessButton, heraldFlip_sendFileToGM };

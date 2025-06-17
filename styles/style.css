@@ -358,10 +358,50 @@
 }
 
 
+.heraldFlip-filterTokenFlipContainer {
+    position: absolute;
+    bottom: 50%;
+    right: 0;
+    z-index: 14;
+}
+
+.heraldFlip-filterTokenFlipMenu {
+    background-color: rgba(82, 82, 82, 0.9);
+    width: 200px;
+    height: auto;
+    padding: 10px;
+    border-radius: 5px;
+    color: white;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 5px;
+}
+
+
+
 /*************************************************************************************************************************************************/
 /************************************************ AUDIO *****************************************************************************************/
 /***********************************************************************************************************************************************/
 
+
+.heraldFlip-audioNameInput::placeholder {
+    color: white;
+    opacity: 1;
+}
+
+.heraldFlip-audioThemeCategoryContainer {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.heraldFlip-audioThemeCategoryContainer label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+}
 
 /*************************************************************************************************************************************************/
 /************************************************ ART *****************************************************************************************/

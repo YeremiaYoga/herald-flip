@@ -106,14 +106,16 @@
     gap: 10px;
 }
 
-.heraldFlip-searchFlipTokenContainer {
+.heraldFlip-searchFlipTokenContainer,
+.heraldFlip-searchFlipAudioContainer {
     width: 100%;
     background-color: #121212;
     border-radius: 8px;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
 }
 
-.heraldFlip-searchFlipTokenInput {
+.heraldFlip-searchFlipTokenInput,
+.heraldFlip-searchFlipAudioInput {
     background-color: #121212;
     color: white !important;
     border: 1px solid #5f5f5f;
@@ -242,7 +244,62 @@
     background-color: #121212;
     color: #fff;
     border: 1px solid #5a5a5a;
+    text-align: center;
+    padding: 2;
 }
+
+.heraldFlip-buttonWithTooltip {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    color: white;
+}
+
+.heraldFlip-transformHelpIcon, .heraldFlip-actorChangeHelpIcon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #444;
+    color: white;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    font-size: 12px;
+    text-align: center;
+    line-height: 16px;
+
+}
+
+.heraldFlip-transformTooltip, .heraldFlip-actorChangeTooltip {
+    visibility: hidden;
+    opacity: 0;
+    background-color: black;
+    color: #fff;
+    padding: 4px 8px;
+    border-radius: 4px;
+    position: absolute;
+    z-index: 10;
+    bottom: 125%;
+    left: 0;
+    transition: opacity 0.3s ease;
+    white-space: nowrap;
+    font-size: 10px;
+}
+
+/* Tooltip khusus berdasarkan ikon hover */
+.heraldFlip-transformHelpIcon:hover+.heraldFlip-transformTooltip {
+    visibility: visible;
+    opacity: 1;
+}
+
+.heraldFlip-actorChangeHelpIcon:hover+.heraldFlip-actorChangeTooltip {
+    visibility: visible;
+    opacity: 1;
+}
+
 
 
 .heraldFlip-flipDataRight {

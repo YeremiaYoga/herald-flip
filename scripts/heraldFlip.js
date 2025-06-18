@@ -216,8 +216,23 @@ async function heraldFlip_renderViewFlipMiddleToken() {
       <div class="heraldFlip-flipDataMiddle">
         <div class="heraldFlip-flipTokenName">${data.profileName}</div>
         <div class="heraldFlip-flipTokenActorName">${data.actorName} / ${data.actorId}</div>
-        <button id="heraldFlip-flipTokenTransform" class="heraldFlip-flipTokenTransform" data-page-id="${page.id}">Transform</button>
-        <button id="heraldFlip-flipTokenActorChange" class="heraldFlip-flipTokenActorChange" data-page-id="${page.id}">Actor Change</button>
+        <div class="heraldFlip-buttonWithTooltip" data-page-id="${page.id}">
+          <div class="heraldFlip-flipTokenTransform">Transform</div>
+          <span class="heraldFlip-transformHelpIcon">?</span>
+          <div class="heraldFlip-transformTooltip">
+            Transform your character token to the image profile that is set. <br/>
+            Future tokens and character sheet will not change.
+          </div>
+        </div>
+
+        <div class="heraldFlip-buttonWithTooltip" data-page-id="${page.id}">
+          <div class="heraldFlip-flipTokenActorChange">Actor Change</div>
+          <span class="heraldFlip-actorChangeHelpIcon heraldFlip-helpIcon">?</span>
+          <div class="heraldFlip-actorChangeTooltip heraldFlip-tooltip">
+            Change your character art fully to the image profile. <br/>
+            Any future tokens place alongside character sheet will be change
+          </div>
+        </div>
       </div>
      <div class="heraldFlip-flipDataRight">
         <div class="heraldFlip-flipTokenAddonButton heraldFlip-flipTokenOpsiContainer">
@@ -560,7 +575,6 @@ async function heraldFlip_renderViewTokenFlipBottom() {
     pages = flipJournal.pages.contents;
   }
   let listFilter = "";
-  let matchingPages = [];
 
   const uniqueActorMap = new Map();
 
@@ -575,21 +589,21 @@ async function heraldFlip_renderViewTokenFlipBottom() {
   listFilter = [...uniqueActorMap.values()]
     .map(({ page, data, actor }) => {
       return `
-      <label class="heraldFlip-filterTokenProfile" title="${data.profileName}" style="display: flex; align-items: center; cursor: pointer; margin: 0 10px;">
-       <input 
-  type="checkbox" 
-  class="heraldFlip-tokenFilterCheckbox" 
-  value="${page.id}" 
-  data-actor-id="${actor.id}"
-  style="margin-bottom: 5px;" 
-/>
-        <img 
-          src="${actor.img}" 
-          alt="${data.profileName}" 
-          style="width: 25px; height: 25px; border-radius: 50%; border: 1px solid white; margin-bottom: 5px;"
+    <label class="heraldFlip-filterTokenProfile" title="${data.actorName}" style="display: flex; align-items: center; cursor: pointer; margin: 0 10px;">
+     <input 
+        type="checkbox" 
+        class="heraldFlip-tokenFilterCheckbox" 
+        value="${page.id}" 
+        data-actor-id="${actor.id}"
+        style="margin-bottom: 5px;" 
         />
-      </label>
-    `;
+      <img 
+        src="${actor.img}" 
+        alt="${data.actorName}" 
+        style="width: 25px; height: 25px; border-radius: 50%; border: 1px solid white; margin-bottom: 5px;"
+      />
+    </label>
+  `;
     })
     .join("");
 
@@ -621,13 +635,28 @@ async function heraldFlip_renderViewTokenFlipBottom() {
         </div>
         <span class="heraldFlip-addAseetFlipTooltip">Add Profile</span>
       </div>
-      <div id="heraldFlip-filterTokenFlipContainer" class="heraldFlip-filterTokenFlipContainer" style="display:none;">
+     <div id="heraldFlip-filterTokenFlipContainer" class="heraldFlip-filterTokenFlipContainer" style="display:none;">
+        <input type="text" id="heraldFlip-filterTokenSearchInput" placeholder="Search filter..." style="width: 100%; padding: 4px; margin-bottom: 5px; background-color: #121212; color: white; border: 1px solid #888;" />
         <div class="heraldFlip-filterTokenFlipMenu">
           ${listFilter}
         </div>
       </div>
     </div>
     `;
+
+    document
+      .getElementById("heraldFlip-filterTokenSearchInput")
+      ?.addEventListener("input", (event) => {
+        const query = event.target.value.toLowerCase();
+        const filterItems = document.querySelectorAll(
+          ".heraldFlip-filterTokenProfile"
+        );
+
+        filterItems.forEach((item) => {
+          const title = item.getAttribute("title")?.toLowerCase() || "";
+          item.style.display = title.includes(query) ? "flex" : "none";
+        });
+      });
 
     document
       .querySelectorAll(".heraldFlip-tokenFilterCheckbox")

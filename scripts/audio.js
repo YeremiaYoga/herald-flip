@@ -36,6 +36,26 @@ async function heraldFlip_createAllThemeAudioFolder(folderName, user) {
 
 async function heraldFlip_renderViewFlipMiddleAudio() {
   let flipMiddle = document.getElementById("heraldFlip-dialogFlipMiddle");
+  const user = game.user;
+  const folders = game.folders.filter((f) => f.type === "JournalEntry");
+  const heraldFlipFolder = folders.find((f) => f.name === "Herald Flip");
+
+  const playerFolder = folders.find(
+    (f) => f.name === user.name && f.folder?.id === heraldFlipFolder?.id
+  );
+  const flipJournal = game.journal.find(
+    (j) => j.folder?.id === playerFolder?.id && j.name === "Audio"
+  );
+  let pages = [];
+  if (flipJournal) {
+    pages = flipJournal.pages.contents;
+  }
+
+  let arrAudio = "";
+  let searchValue =
+    document
+      .getElementById("heraldFlip-searchFlipAudioInput")
+      ?.value?.toLowerCase() ?? "";
   if (flipMiddle) {
     flipMiddle.innerHTML = `
       `;
@@ -53,8 +73,8 @@ async function heraldFlip_renderViewAudioFlipBottom() {
    
     </div>
     <div id="heraldFlip-dialogFlipBottomBot" class="heraldFlip-dialogFlipBottomBot">
-      <div class="heraldFlip-searchFlipTokenContainer">
-          <input type="text" id="heraldFlip-searchFlipTokenInput" class="heraldFlip-searchFlipTokenInput" placeholder="Search..." />
+      <div class="heraldFlip-searchFlipAudioContainer">
+          <input type="text" id="heraldFlip-searchFlipAudioInput" class="heraldFlip-searchFlipAudioInput" placeholder="Search..." />
       </div>
       <div class="heraldFlip-addAssetFlipWrapper">
         <div id="heraldFlip-addAssetAudioFlip" class="heraldFlip-addAssetFlip">
@@ -68,7 +88,7 @@ async function heraldFlip_renderViewAudioFlipBottom() {
 
     let searchTimeout;
     document
-      .getElementById("heraldFlip-searchFlipTokenInput")
+      .getElementById("heraldFlip-searchFlipAudioInput")
       ?.addEventListener("input", () => {
         clearTimeout(searchTimeout);
         searchTimeout = setTimeout(() => {
@@ -146,7 +166,7 @@ async function heraldFlip_addAssetAudioFlip() {
         }
 
         let folderPath = `Herald's-Flip/${userName}/Audio/${category}`;
-        let filePath = `${folderPath}/${file.name}`;
+        let filePath = `${folderPath}/${name}.${ext}`;
         if (game.user.isGM) {
           await helper.heraldFlip_uploadFileDirectly(
             userName,
@@ -164,6 +184,8 @@ async function heraldFlip_addAssetAudioFlip() {
             folderPath
           );
         }
+
+        await heraldFlip_addAudiotoPages(name, "Audio", category, ext);
 
         await heraldFlip_audioSocket.executeAsGM("saveAudioToPlaylist", {
           name,
@@ -233,6 +255,39 @@ async function heraldFlip_addAudioToPlaylist(
     },
     { parent: userPlaylist }
   );
+}
+
+async function heraldFlip_addAudiotoPages(name, type, theme, ext) {
+  const user = game.user;
+  const folders = game.folders.filter((f) => f.type === "JournalEntry");
+  const heraldFlipFolder = folders.find((f) => f.name === "Herald Flip");
+
+  const playerFolder = folders.find(
+    (f) => f.name === user.name && f.folder?.id === heraldFlipFolder?.id
+  );
+  const flipJournal = game.journal.find(
+    (j) => j.folder?.id === playerFolder?.id && j.name === type
+  );
+
+  const pageData = {
+    name: name,
+    type: "text",
+    text: {
+      content: `
+        <p><strong>Profile Name :</strong> ${name}</p>
+        <p><strong>Type :</strong> ${type}</p>
+        <p><strong>Theme :</strong> ${theme}</p>
+        <p><strong>Audio Name :</strong> ${name}</p>
+        <p><strong>Audio Ext :</strong> ${ext}</p>
+        <p><strong>Message :</strong> </p>
+      `,
+      format: 1,
+    },
+  };
+
+  if (flipJournal) {
+    await flipJournal.createEmbeddedDocuments("JournalEntryPage", [pageData]);
+  }
 }
 
 export {

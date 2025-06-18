@@ -1,5 +1,3 @@
-
-
 async function heraldFLip_createFolder(folder) {
   try {
     await FilePicker.createDirectory("data", folder);
@@ -145,6 +143,10 @@ function heraldFlip_extractDataFromPage(page) {
     actorName: extract("Actor Name"),
     imageName: extract("Image Name"),
     imageExt: extract("Image Ext"),
+
+    theme: extract("Theme"),
+    audioName: extract("Audio Name"),
+    audioExt: extract("Audio Ext"),
     size: Number(extract("Size")) || 1,
     effect: extract("Effect"),
     items: extract("Items"),

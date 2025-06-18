@@ -460,6 +460,164 @@
     white-space: nowrap;
 }
 
+.heraldFlip-flipAudioContainer {
+    display: flex;
+    gap: 10px;
+    padding: 5px;
+    align-items: center;
+}
+
+.heraldFlip-flipAudioImageContainer {
+    position: relative;
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background-color: #363636;
+    border: 2px solid #5a5a5a;
+    z-index: 8;
+    cursor: pointer;
+}
+
+.heraldFlip-flipAudioImage {
+    width: 99%;
+    height: 99%;
+    border: none;
+    object-fit: cover;
+    object-position: center;
+    z-index: 8;
+    border-radius: 50%;
+}
+
+.heraldFlip-flipAudioName {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.heraldFlip-flipAudioActorName {
+    font-size: 10px;
+    color: #b9b9b9;
+}
+
+.heraldFlip-flipAudioTransform,
+.heraldFlip-flipAudioActorChange {
+    font-size: 14px;
+    line-height: 20px;
+    width: 50%;
+    cursor: pointer;
+    background-color: #121212;
+    color: #fff;
+    border: 1px solid #5a5a5a;
+    text-align: center;
+    padding: 2;
+}
+
+.heraldFlip-buttonWithTooltip {
+    position: relative;
+    /* display: flex; */
+    display: none;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    color: white;
+
+}
+
+.heraldFlip-transformHelpIcon, .heraldFlip-actorChangeHelpIcon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #444;
+    color: white;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    font-size: 12px;
+    text-align: center;
+    line-height: 16px;
+
+}
+
+.heraldFlip-transformTooltip, .heraldFlip-actorChangeTooltip {
+    visibility: hidden;
+    opacity: 0;
+    background-color: black;
+    color: #fff;
+    padding: 4px 8px;
+    border-radius: 4px;
+    position: absolute;
+    z-index: 10;
+    bottom: 125%;
+    left: 0;
+    transition: opacity 0.3s ease;
+    white-space: nowrap;
+    font-size: 10px;
+}
+
+/* Tooltip khusus berdasarkan ikon hover */
+.heraldFlip-transformHelpIcon:hover+.heraldFlip-transformTooltip {
+    visibility: visible;
+    opacity: 1;
+}
+
+.heraldFlip-actorChangeHelpIcon:hover+.heraldFlip-actorChangeTooltip {
+    visibility: visible;
+    opacity: 1;
+}
+
+
+
+.heraldFlip-flipDataRight {
+    margin-left: auto;
+    display: flex;
+    gap: 10px;
+    font-size: 16px;
+}
+
+
+.heraldFlip-flipAudioEditButton {
+    color: rgb(7, 183, 253);
+    cursor: pointer;
+}
+
+.heraldFlip-flipAudioOpsiContainer {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+}
+
+.heraldFlip-flipAudioOpsiTooltip {
+    visibility: hidden;
+    width: max-content;
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    padding: 4px 8px;
+    border-radius: 4px;
+    position: absolute;
+    z-index: 10;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    white-space: nowrap;
+    font-size: 0.75rem;
+}
+
+.heraldFlip-flipAudioOpsiContainer:hover .heraldFlip-flipAudioOpsiTooltip {
+    visibility: visible;
+    opacity: 1;
+}
+
+
+
+.heraldFlip-flipAudioDeleteButton {
+    color: red;
+    cursor: pointer;
+}
+
+
 /*************************************************************************************************************************************************/
 /************************************************ ART *****************************************************************************************/
 /***********************************************************************************************************************************************/

@@ -56,9 +56,80 @@ async function heraldFlip_renderViewFlipMiddleAudio() {
     document
       .getElementById("heraldFlip-searchFlipAudioInput")
       ?.value?.toLowerCase() ?? "";
+  for (const page of pages) {
+    const data = await helper.heraldFlip_extractDataFromPage(page);
+
+    if (!data.profileName.toLowerCase().includes(searchValue)) {
+      continue;
+    }
+    // if (
+    //   heraldFlip_filterToken.length > 0 &&
+    //   !heraldFlip_filterToken.includes(data.actorId)
+    // )
+    //   continue;
+    arrAudio += `
+    <div class="heraldFlip-flipAudioContainer">
+      <div class="heraldFlip-flipAudioLeft">
+      </div>
+      <div class="heraldFlip-flipDataMiddle">
+        <div class="heraldFlip-flipAudioName">${data.profileName}</div>
+        <div class="heraldFlip-flipAudioTheme">${data.theme}</div>
+        <div class="heraldFlip-buttonWithTooltip" data-page-id="${page.id}">
+          <div class="heraldFlip-flipAudioTransform">Transform</div>
+          <span class="heraldFlip-transformHelpIcon">?</span>
+          <div class="heraldFlip-transformTooltip">
+            Transform your character Audio to the image profile that is set. <br/>
+            Future Audios and character sheet will not change.
+          </div>
+        </div>
+
+        <div class="heraldFlip-buttonWithTooltip" data-page-id="${page.id}">
+          <div class="heraldFlip-flipAudioActorChange">Actor Change</div>
+          <span class="heraldFlip-actorChangeHelpIcon heraldFlip-helpIcon">?</span>
+          <div class="heraldFlip-actorChangeTooltip heraldFlip-tooltip">
+            Change your character art fully to the image profile. <br/>
+            Any future Audios place alongside character sheet will be change
+          </div>
+        </div>
+      </div>
+     <div class="heraldFlip-flipDataRight">
+        <div class="heraldFlip-flipAudioEditButton heraldFlip-flipAudioOpsiContainer">
+          <i class="fa-solid fa-pen-to-square"></i>
+          <span class="heraldFlip-flipAudioOpsiTooltip">Edit</span>
+        </div>
+        <div class="heraldFlip-flipAudioDeleteButton heraldFlip-flipAudioOpsiContainer">
+          <i class="fa-solid fa-trash"></i>
+          <span class="heraldFlip-flipAudioOpsiTooltip">Delete</span>
+        </div>
+      </div>
+
+    </div>
+  `;
+  }
+
   if (flipMiddle) {
-    flipMiddle.innerHTML = `
-      `;
+    flipMiddle.innerHTML = arrAudio;
+
+    flipMiddle
+      .querySelectorAll(".heraldFlip-flipAudioDeleteButton")
+      .forEach((btn, index) => {
+        btn.addEventListener("click", async () => {
+          const confirm = await Dialog.confirm({
+            title: "Confirm Deletion",
+            content: `<p>Are you sure you want to delete this audio Profile?</p>`,
+            yes: () => true,
+            no: () => false,
+            defaultYes: false,
+          });
+
+          if (confirm) {
+            const pageToDelete = pages[index];
+            await pageToDelete.delete();
+
+            // await heraldFlip_renderViewFlipMiddleAudio();
+          }
+        });
+      });
   }
 }
 
@@ -92,7 +163,7 @@ async function heraldFlip_renderViewAudioFlipBottom() {
       ?.addEventListener("input", () => {
         clearTimeout(searchTimeout);
         searchTimeout = setTimeout(() => {
-          heraldFlip_renderViewFlipMiddleToken();
+          heraldFlip_renderViewFlipMiddleAudio();
         }, 500);
       });
     document

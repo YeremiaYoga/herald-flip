@@ -166,6 +166,7 @@ async function heraldFlip_renderFlipMiddle() {
     await audio.heraldFlip_renderViewAudioFlipBottom();
   } else if (heraldFlip_typeSelected == "Art") {
     await art.heraldFlip_renderViewFlipMiddleArt();
+    await art.heraldFlip_renderViewArtFlipBottom();
   } else {
     await heraldFlip_renderViewFlipMiddleToken();
     await heraldFlip_renderViewTokenFlipBottom();

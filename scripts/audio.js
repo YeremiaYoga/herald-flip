@@ -125,9 +125,6 @@ async function heraldFlip_renderViewFlipMiddleAudio() {
           </form>
         `,
             buttons: {
-              cancel: {
-                label: "Cancel",
-              },
               confirm: {
                 label: "Save",
                 callback: async (html) => {
@@ -161,11 +158,37 @@ async function heraldFlip_renderViewFlipMiddleAudio() {
                   await heraldFlip_renderViewFlipMiddleAudio();
                 },
               },
+              cancel: {
+                label: "Cancel",
+              },
             },
             default: "confirm",
           });
 
           editDialog.render(true);
+          Hooks.once("renderDialog", async (app) => {
+            const dialogElement = app.element[0];
+
+            const contentElement =
+              dialogElement.querySelector(".window-content");
+            if (contentElement) {
+              contentElement.style.backgroundColor = "rgba(0, 0, 0, 0.3)";
+              contentElement.style.color = "white";
+              contentElement.style.backgroundImage = "none";
+              contentElement.style.backgroundSize = "cover";
+              contentElement.style.backgroundRepeat = "no-repeat";
+              contentElement.style.backgroundPosition = "center";
+            }
+
+            const buttons = dialogElement.querySelectorAll(
+              ".dialog-buttons .dialog-button"
+            );
+
+            buttons.forEach((button) => {
+              button.style.color = "white";
+              button.style.border = "1px solid white";
+            });
+          });
         });
       });
 
@@ -186,14 +209,14 @@ async function heraldFlip_renderViewFlipMiddleAudio() {
             const data = await helper.heraldFlip_extractDataFromPage(
               pageToDelete
             );
-            // await heraldFlip_audioSocket.executeAsGM(
-            //   "deleteAudioFromPlaylist",
-            //   {
-            //     name: data.profileName,
-            //     theme: data.theme,
-            //     userName: game.user.name,
-            //   }
-            // );
+            await heraldFlip_audioSocket.executeAsGM(
+              "deleteAudioFromPlaylist",
+              {
+                name: data.profileName,
+                theme: data.theme,
+                userName: game.user.name,
+              }
+            );
 
             await pageToDelete.delete();
             await heraldFlip_renderViewFlipMiddleAudio();
@@ -282,7 +305,7 @@ async function heraldFlip_renderViewAudioFlipBottom() {
    <div id="heraldFlip-dialogFlipBottomTop" class="heraldFlip-dialogFlipBottomTop">
       ${
         game.user.isGM
-          ? `<label class="heraldFlip-toggleMp3IncludeContainer" style="margin-left: auto; display: none; align-items: center;">
+          ? `<label class="heraldFlip-toggleMp3IncludeContainer" style="margin-left: auto; display: flex; align-items: center;">
               <input type="checkbox" id="heraldFlip-toggleMp3" ${
                 includeMp3 ? "checked" : ""
               } />
@@ -340,7 +363,7 @@ async function heraldFlip_renderViewAudioFlipBottom() {
 }
 
 async function heraldFlip_addAssetAudioFlip() {
-  const limitedThemes = heraldFlip_audioTheme; // Kalau semua kategori
+  const limitedThemes = heraldFlip_audioTheme;
   const categoryOptions = limitedThemes
     .map((cat, i) => {
       const checked = i === 0 ? "checked" : "";
@@ -421,6 +444,10 @@ async function heraldFlip_addAssetAudioFlip() {
           );
         }
 
+        const includeMp3 = game.settings.get("herald-flip", "audioIncludeMp3");
+        if (includeMp3 == false && ext == "mp3") {
+          return;
+        }
         await heraldFlip_addAudiotoPages(name, "Audio", category, ext);
 
         await heraldFlip_audioSocket.executeAsGM("saveAudioToPlaylist", {
@@ -431,7 +458,7 @@ async function heraldFlip_addAssetAudioFlip() {
         });
 
         dialog.close();
-        // setTimeout(heraldFlip_renderViewFlipMiddleToken, 500);
+        setTimeout(heraldFlip_renderViewFlipMiddleAudio, 500);
       });
     },
   });

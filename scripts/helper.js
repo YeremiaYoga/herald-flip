@@ -166,10 +166,11 @@ async function heraldFlip_uploadFileDirectly(
     ui.notifications.warn("Hanya GM yang dapat mengupload file.");
     return false;
   }
+  const includeMp3 = game.settings.get("herald-flip", "audioIncludeMp3");
   const allowedExtensions = {
     Token: ["webp", "png", "jpg", "jpeg"],
     Art: ["webp", "png", "jpg", "jpeg"],
-    Audio: ["ogg", "mp3"],
+    Audio: includeMp3 ? ["ogg", "mp3"] : ["ogg"],
   };
 
   const originalExt = file.name.split(".").pop().toLowerCase();

@@ -26,6 +26,25 @@ Hooks.once("socketlib.ready", () => {
       await heraldFlip_addAudioToPlaylist(name, filePath, category, userName);
     }
   );
+
+  heraldFlip_audioSocket.register(
+    "deleteAudioFromPlaylist",
+    async ({ name, theme, userName }) => {
+      await heraldFlip_deleteAudiofromPlaylist(name, theme, userName);
+    }
+  );
+
+  heraldFlip_audioSocket.register(
+    "renameAudioInPlaylist",
+    async ({ oldName, newName, theme, userName }) => {
+      await heraldFlip_renameAudioInPlaylist({
+        oldName,
+        newName,
+        theme,
+        userName,
+      });
+    }
+  );
 });
 
 async function heraldFlip_createAllThemeAudioFolder(folderName, user) {
@@ -62,11 +81,6 @@ async function heraldFlip_renderViewFlipMiddleAudio() {
     if (!data.profileName.toLowerCase().includes(searchValue)) {
       continue;
     }
-    // if (
-    //   heraldFlip_filterToken.length > 0 &&
-    //   !heraldFlip_filterToken.includes(data.actorId)
-    // )
-    //   continue;
     arrAudio += `
     <div class="heraldFlip-flipAudioContainer">
       <div class="heraldFlip-flipAudioLeft">
@@ -74,23 +88,6 @@ async function heraldFlip_renderViewFlipMiddleAudio() {
       <div class="heraldFlip-flipDataMiddle">
         <div class="heraldFlip-flipAudioName">${data.profileName}</div>
         <div class="heraldFlip-flipAudioTheme">${data.theme}</div>
-        <div class="heraldFlip-buttonWithTooltip" data-page-id="${page.id}">
-          <div class="heraldFlip-flipAudioTransform">Transform</div>
-          <span class="heraldFlip-transformHelpIcon">?</span>
-          <div class="heraldFlip-transformTooltip">
-            Transform your character Audio to the image profile that is set. <br/>
-            Future Audios and character sheet will not change.
-          </div>
-        </div>
-
-        <div class="heraldFlip-buttonWithTooltip" data-page-id="${page.id}">
-          <div class="heraldFlip-flipAudioActorChange">Actor Change</div>
-          <span class="heraldFlip-actorChangeHelpIcon heraldFlip-helpIcon">?</span>
-          <div class="heraldFlip-actorChangeTooltip heraldFlip-tooltip">
-            Change your character art fully to the image profile. <br/>
-            Any future Audios place alongside character sheet will be change
-          </div>
-        </div>
       </div>
      <div class="heraldFlip-flipDataRight">
         <div class="heraldFlip-flipAudioEditButton heraldFlip-flipAudioOpsiContainer">
@@ -111,6 +108,68 @@ async function heraldFlip_renderViewFlipMiddleAudio() {
     flipMiddle.innerHTML = arrAudio;
 
     flipMiddle
+      .querySelectorAll(".heraldFlip-flipAudioEditButton")
+      .forEach((btn, index) => {
+        btn.addEventListener("click", async () => {
+          const pageToEdit = pages[index];
+          const data = await helper.heraldFlip_extractDataFromPage(pageToEdit);
+          const currentContent = pageToEdit.text.content;
+          const editDialog = new Dialog({
+            title: "Edit Audio Profile Name",
+            content: `
+          <form>
+            <div class="form-group">
+              <label for="editAudioName">New Profile Name:</label>
+              <input type="text" name="editAudioName" value="${data.profileName}" style="color:white; width:100%;" />
+            </div>
+          </form>
+        `,
+            buttons: {
+              cancel: {
+                label: "Cancel",
+              },
+              confirm: {
+                label: "Save",
+                callback: async (html) => {
+                  const newName = html
+                    .find('[name="editAudioName"]')
+                    .val()
+                    .trim();
+                  if (!newName || newName === data.profileName) return;
+
+                  const newContent = currentContent.replace(
+                    /(<strong>Profile Name :<\/strong>\s*)(.*?)<\/p>/,
+                    `$1${newName}</p>`
+                  );
+
+                  await pageToEdit.update({
+                    name: newName,
+                    "text.content": newContent,
+                  });
+
+                  await heraldFlip_audioSocket.executeAsGM(
+                    "renameAudioInPlaylist",
+                    {
+                      oldName: data.profileName,
+                      newName: newName,
+                      theme: "Battle",
+                      userName: game.user.name,
+                    }
+                  );
+
+                  ui.notifications.info(`Audio name updated to "${newName}".`);
+                  await heraldFlip_renderViewFlipMiddleAudio();
+                },
+              },
+            },
+            default: "confirm",
+          });
+
+          editDialog.render(true);
+        });
+      });
+
+    flipMiddle
       .querySelectorAll(".heraldFlip-flipAudioDeleteButton")
       .forEach((btn, index) => {
         btn.addEventListener("click", async () => {
@@ -124,13 +183,92 @@ async function heraldFlip_renderViewFlipMiddleAudio() {
 
           if (confirm) {
             const pageToDelete = pages[index];
-            await pageToDelete.delete();
+            const data = await helper.heraldFlip_extractDataFromPage(
+              pageToDelete
+            );
+            // await heraldFlip_audioSocket.executeAsGM(
+            //   "deleteAudioFromPlaylist",
+            //   {
+            //     name: data.profileName,
+            //     theme: data.theme,
+            //     userName: game.user.name,
+            //   }
+            // );
 
-            // await heraldFlip_renderViewFlipMiddleAudio();
+            await pageToDelete.delete();
+            await heraldFlip_renderViewFlipMiddleAudio();
           }
         });
       });
   }
+}
+
+async function heraldFlip_renameAudioInPlaylist({
+  oldName,
+  newName,
+  theme,
+  userName,
+}) {
+  const heraldFlipFolder = game.folders.find(
+    (f) => f.name === "Herald Flip" && f.type === "Playlist" && !f.folder
+  );
+  if (!heraldFlipFolder) {
+    ui.notifications.error("Herald Flip folder not found.");
+    return;
+  }
+
+  const themeFolder = game.folders.find(
+    (f) =>
+      f.name === theme &&
+      f.folder?.id === heraldFlipFolder.id &&
+      f.type === "Playlist"
+  );
+  if (!themeFolder) {
+    ui.notifications.error(`Theme folder "${theme}" not found.`);
+    return;
+  }
+
+  const userPlaylist = game.playlists.find(
+    (p) => p.name === userName && p.folder?.id === themeFolder.id
+  );
+  if (!userPlaylist) {
+    ui.notifications.error(`Playlist for user "${userName}" not found.`);
+    return;
+  }
+
+  const targetSound = userPlaylist.sounds.find((s) => s.name === oldName);
+  if (!targetSound) {
+    ui.notifications.warn(`Audio "${oldName}" not found in playlist.`);
+    return;
+  }
+
+  await targetSound.update({ name: newName });
+  ui.notifications.info(
+    `Audio "${oldName}" renamed to "${newName}" in playlist.`
+  );
+}
+
+async function heraldFlip_deleteAudiofromPlaylist(audioName, theme, userName) {
+  const heraldFlipFolder = game.folders.find(
+    (f) => f.name === "Herald Flip" && f.type === "Playlist" && !f.folder
+  );
+  if (!heraldFlipFolder) return;
+
+  const themeFolder = game.folders.find(
+    (f) =>
+      f.name === theme &&
+      f.folder?.id === heraldFlipFolder.id &&
+      f.type === "Playlist"
+  );
+  if (!themeFolder) return;
+
+  const playlist = game.playlists.find(
+    (p) => p.name === userName && p.folder?.id === themeFolder.id
+  );
+  if (!playlist) return;
+
+  const sound = playlist.sounds.find((s) => s.name === audioName);
+  if (sound) await sound.delete();
 }
 
 async function heraldFlip_renderViewAudioFlipBottom() {
@@ -139,10 +277,22 @@ async function heraldFlip_renderViewAudioFlipBottom() {
   let selectedActor = user.character;
 
   if (flipBottom) {
+    const includeMp3 = game.settings.get("herald-flip", "audioIncludeMp3");
     flipBottom.innerHTML = `
-    <div id="heraldFlip-dialogFlipBottomTop" class="heraldFlip-dialogFlipBottomTop">
-   
+   <div id="heraldFlip-dialogFlipBottomTop" class="heraldFlip-dialogFlipBottomTop">
+      ${
+        game.user.isGM
+          ? `<label class="heraldFlip-toggleMp3IncludeContainer" style="margin-left: auto; display: none; align-items: center;">
+              <input type="checkbox" id="heraldFlip-toggleMp3" ${
+                includeMp3 ? "checked" : ""
+              } />
+              <span class="heraldFlip-sliderIncludeMp3"></span>
+              <span style="margin-left: 5px;">MP3</span>
+            </label>`
+          : ""
+      }
     </div>
+
     <div id="heraldFlip-dialogFlipBottomBot" class="heraldFlip-dialogFlipBottomBot">
       <div class="heraldFlip-searchFlipAudioContainer">
           <input type="text" id="heraldFlip-searchFlipAudioInput" class="heraldFlip-searchFlipAudioInput" placeholder="Search..." />
@@ -156,6 +306,21 @@ async function heraldFlip_renderViewAudioFlipBottom() {
      
     </div>
     `;
+
+    if (game.user.isGM) {
+      document
+        .getElementById("heraldFlip-toggleMp3")
+        ?.addEventListener("change", async (e) => {
+          await game.settings.set(
+            "herald-flip",
+            "audioIncludeMp3",
+            e.target.checked
+          );
+          ui.notifications.info(
+            `MP3 support has been ${e.target.checked ? "enabled" : "disabled"}.`
+          );
+        });
+    }
 
     let searchTimeout;
     document

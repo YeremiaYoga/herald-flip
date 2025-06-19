@@ -226,7 +226,7 @@ async function heraldFlip_renderViewFlipMiddleToken() {
         </div>
 
         <div class="heraldFlip-buttonWithTooltip" data-page-id="${page.id}">
-          <div class="heraldFlip-flipTokenActorChange">Actor Change</div>
+          <div class="heraldFlip-flipTokenActorChange" data-page-id="${page.id}">Actor Change</div>
           <span class="heraldFlip-actorChangeHelpIcon heraldFlip-helpIcon">?</span>
           <div class="heraldFlip-actorChangeTooltip heraldFlip-tooltip">
             Change your character art fully to the image profile. <br/>

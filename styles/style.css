@@ -511,17 +511,6 @@
     padding: 2;
 }
 
-.heraldFlip-buttonWithTooltip {
-    position: relative;
-    /* display: flex; */
-    display: none;
-    align-items: center;
-    gap: 6px;
-    margin-bottom: 8px;
-    cursor: pointer;
-    color: white;
-
-}
 
 .heraldFlip-transformHelpIcon, .heraldFlip-actorChangeHelpIcon {
     display: flex;
@@ -616,6 +605,47 @@
     color: red;
     cursor: pointer;
 }
+
+.heraldFlip-toggleMp3IncludeContainer {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.heraldFlip-toggleMp3IncludeContainer input[type="checkbox"] {
+    display: none;
+}
+
+.heraldFlip-sliderIncludeMp3 {
+    position: relative;
+    width: 40px;
+    height: 20px;
+    background-color: #ccc;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.heraldFlip-sliderIncludeMp3::before {
+    content: "";
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    left: 2px;
+    top: 2px;
+    background-color: white;
+    border-radius: 50%;
+    transition: transform 0.2s ease;
+}
+
+.heraldFlip-toggleMp3IncludeContainer input[type="checkbox"]:checked+.heraldFlip-sliderIncludeMp3 {
+    background-color: #00afc1;
+}
+
+.heraldFlip-toggleMp3IncludeContainer input[type="checkbox"]:checked+.heraldFlip-sliderIncludeMp3::before {
+    transform: translateX(20px);
+}
+
 
 
 /*************************************************************************************************************************************************/

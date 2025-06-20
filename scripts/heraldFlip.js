@@ -26,7 +26,6 @@ Hooks.once("socketlib.ready", () => {
       const blob = await (await fetch(base64)).blob();
 
       const file = new File([blob], fileName, { type: blob.type });
-      console.log(fileType);
       await helper.heraldFlip_uploadFileDirectly(
         userName,
         fileType,
@@ -669,8 +668,7 @@ async function heraldFlip_renderViewTokenFlipBottom() {
             ),
           ];
           heraldFlip_filterToken = checked.map((cb) => cb.dataset.actorId);
-          console.log("Filtered actor IDs:", heraldFlip_filterToken);
-
+    
           heraldFlip_renderViewFlipMiddleToken();
         });
       });
@@ -678,7 +676,7 @@ async function heraldFlip_renderViewTokenFlipBottom() {
     document
       .getElementById("heraldFlip-filterTokenFlip")
       ?.addEventListener("click", () => {
-        console.log("test");
+
         const filterMenu = document.getElementById(
           "heraldFlip-filterTokenFlipContainer"
         );

@@ -26,11 +26,10 @@ async function heraldFlip_renderViewFlipMiddleArt() {
 
   for (const page of pages) {
     const data = await helper.heraldFlip_extractDataFromPage(page);
-    console.log(data);
 
-    // if (!data.profileName.toLowerCase().includes(searchValue)) {
-    //   continue;
-    // }
+    if (!data.profileName.toLowerCase().includes(searchValue)) {
+      continue;
+    }
     arrArt += `
           <div class="heraldFlip-flipArtItem">
             <div class="heraldFlip-flipArtTop">

@@ -161,7 +161,6 @@ async function heraldFlip_uploadFileDirectly(
   filename,
   folderPath
 ) {
-  console.log(file);
   if (!game.user.isGM) {
     ui.notifications.warn("Hanya GM yang dapat mengupload file.");
     return false;

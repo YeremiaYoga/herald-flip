@@ -98,7 +98,7 @@ async function heraldFlip_showDialogFlip() {
     </div>`;
 
   const dialog = new Dialog({
-    title: "Herald Flip",
+    title: "Herald's Flip",
     content: dialogContent,
     buttons: {},
     default: "add",
@@ -106,7 +106,7 @@ async function heraldFlip_showDialogFlip() {
 
   dialog.render(true);
   Hooks.once("renderDialog", async (app) => {
-    if (app instanceof Dialog && app.title === "Herald Flip") {
+    if (app instanceof Dialog && app.title === "Herald's Flip") {
       const width = 500;
       const height = 300;
 

@@ -11,10 +11,15 @@ let heraldFlip_audioTheme = [
   "Romantic",
   "Sad",
   "Reunion",
+  "Stealth",
+  "Quiet Resolve",
   "Battle",
   "Boss",
   "Heroic",
   "Hopeless",
+  "Last Stand",
+  "Corruption",
+  "Chase",
 ];
 let heraldFlip_audioSocket;
 Hooks.once("socketlib.ready", () => {
@@ -22,8 +27,14 @@ Hooks.once("socketlib.ready", () => {
 
   heraldFlip_audioSocket.register(
     "saveAudioToPlaylist",
-    async ({ name, filePath, category, userName }) => {
-      await heraldFlip_addAudioToPlaylist(name, filePath, category, userName);
+    async ({ name, filePath, category, userName, user }) => {
+      await heraldFlip_addAudioToPlaylist(
+        name,
+        filePath,
+        category,
+        userName,
+        user
+      );
     }
   );
 
@@ -36,12 +47,13 @@ Hooks.once("socketlib.ready", () => {
 
   heraldFlip_audioSocket.register(
     "renameAudioInPlaylist",
-    async ({ oldName, newName, theme, userName }) => {
+    async ({ oldName, newName, theme, userName, user }) => {
       await heraldFlip_renameAudioInPlaylist({
         oldName,
         newName,
         theme,
         userName,
+        user,
       });
     }
   );
@@ -57,7 +69,7 @@ async function heraldFlip_renderViewFlipMiddleAudio() {
   let flipMiddle = document.getElementById("heraldFlip-dialogFlipMiddle");
   const user = game.user;
   const folders = game.folders.filter((f) => f.type === "JournalEntry");
-  const heraldFlipFolder = folders.find((f) => f.name === "Herald Flip");
+  const heraldFlipFolder = folders.find((f) => f.name === "Herald's Flip");
 
   const playerFolder = folders.find(
     (f) => f.name === user.name && f.folder?.id === heraldFlipFolder?.id
@@ -149,8 +161,9 @@ async function heraldFlip_renderViewFlipMiddleAudio() {
                     {
                       oldName: data.profileName,
                       newName: newName,
-                      theme: "Battle",
+                      theme: data.theme,
                       userName: game.user.name,
+                      user: game.user,
                     }
                   );
 
@@ -231,49 +244,48 @@ async function heraldFlip_renameAudioInPlaylist({
   newName,
   theme,
   userName,
+  user,
 }) {
+  const folderName = user.isGM
+    ? "Music Library (Herald's Flip)"
+    : "Herald's Flip";
+
   const heraldFlipFolder = game.folders.find(
-    (f) => f.name === "Herald Flip" && f.type === "Playlist" && !f.folder
+    (f) => f.name === folderName && f.type === "Playlist" && !f.folder
   );
   if (!heraldFlipFolder) {
-    ui.notifications.error("Herald Flip folder not found.");
+    ui.notifications.error(`${folderName} folder not found.`);
     return;
   }
 
-  const themeFolder = game.folders.find(
-    (f) =>
-      f.name === theme &&
-      f.folder?.id === heraldFlipFolder.id &&
-      f.type === "Playlist"
+  const playlist = game.playlists.find(
+    (p) => p.name === theme && p.folder?.id === heraldFlipFolder.id
   );
-  if (!themeFolder) {
-    ui.notifications.error(`Theme folder "${theme}" not found.`);
+  if (!playlist) {
+    ui.notifications.error(`Playlist "${theme}" not found.`);
     return;
   }
 
-  const userPlaylist = game.playlists.find(
-    (p) => p.name === userName && p.folder?.id === themeFolder.id
-  );
-  if (!userPlaylist) {
-    ui.notifications.error(`Playlist for user "${userName}" not found.`);
-    return;
-  }
+  const formattedOldName = `${oldName} (${userName})`;
+  const formattedNewName = `${newName} (${userName})`;
 
-  const targetSound = userPlaylist.sounds.find((s) => s.name === oldName);
+  const targetSound = playlist.sounds.find((s) => s.name === formattedOldName);
   if (!targetSound) {
-    ui.notifications.warn(`Audio "${oldName}" not found in playlist.`);
+    ui.notifications.warn(
+      `Audio "${formattedOldName}" not found in playlist "${theme}".`
+    );
     return;
   }
 
-  await targetSound.update({ name: newName });
+  await targetSound.update({ name: formattedNewName });
   ui.notifications.info(
-    `Audio "${oldName}" renamed to "${newName}" in playlist.`
+    `Audio "${formattedOldName}" renamed to "${formattedNewName}" in "${theme}" playlist.`
   );
 }
 
 async function heraldFlip_deleteAudiofromPlaylist(audioName, theme, userName) {
   const heraldFlipFolder = game.folders.find(
-    (f) => f.name === "Herald Flip" && f.type === "Playlist" && !f.folder
+    (f) => f.name === "Herald's Flip" && f.type === "Playlist" && !f.folder
   );
   if (!heraldFlipFolder) return;
 
@@ -364,16 +376,58 @@ async function heraldFlip_renderViewAudioFlipBottom() {
 
 async function heraldFlip_addAssetAudioFlip() {
   const limitedThemes = heraldFlip_audioTheme;
-  const categoryOptions = limitedThemes
-    .map((cat, i) => {
-      const checked = i === 0 ? "checked" : "";
-      return `
-      <label style="margin: 5px; display: inline-block; width: 18%;">
-        <input type="radio" name="audioCategory" value="${cat}" /> ${cat}
-      </label>
-    `;
-    })
-    .join("");
+  const section1 = [
+    "Chill",
+    "Tense",
+    "Happy",
+    "Mysterious",
+    "Whimsical",
+    "Mystic",
+  ];
+  const section2 = [
+    "Melancholy",
+    "Romantic",
+    "Sad",
+    "Reunion",
+    "Stealth",
+    "Quiet Resolve",
+  ];
+  const section3 = [
+    "Battle",
+    "Boss",
+    "Heroic",
+    "Hopeless",
+    "Last Stand",
+    "Corruption",
+    "Chase",
+  ];
+
+  const renderCategorySection = (themes, sectionTitle, defaultSelected) => {
+    return `
+    <fieldset style="margin-bottom: 20px;">
+      <legend><strong>${sectionTitle}</strong></legend>
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
+        ${themes
+          .map((cat) => {
+            const checked = defaultSelected === cat ? "checked" : "";
+            return `
+              <label>
+                <input type="radio" name="audioCategory" value="${cat}" /> ${cat}
+              </label>
+            `;
+          })
+          .join("")}
+      </div>
+    </fieldset>
+  `;
+  };
+
+  // You can specify which one is selected by default, for example section1[0]
+  const categoryOptions =
+    renderCategorySection(section1, "Section 1", section1[0]) +
+    renderCategorySection(section2, "Section 2", "") +
+    renderCategorySection(section3, "Section 3", "");
+
   let dialog = new Dialog({
     title: "Upload Assets",
     content: `
@@ -412,6 +466,7 @@ async function heraldFlip_addAssetAudioFlip() {
         const category = html.find('[name="audioCategory"]:checked').val();
 
         const ext = file?.name?.split(".").pop().toLowerCase();
+        const user = game.user;
         const userName = game.user.name;
 
         let missingFields = [];
@@ -455,6 +510,7 @@ async function heraldFlip_addAssetAudioFlip() {
           filePath,
           category,
           userName,
+          user,
         });
 
         dialog.close();
@@ -489,41 +545,41 @@ async function heraldFlip_addAudioToPlaylist(
   audioName,
   filePath,
   category,
-  userName
+  userName,
+  user
 ) {
+  const folderName = user.isGM
+    ? "Music Library (Herald's Flip)"
+    : "Herald's Flip";
+
   const heraldFlipFolder = game.folders.find(
-    (f) => f.name === "Herald Flip" && f.type === "Playlist" && !f.folder
+    (f) => f.name === folderName && f.type === "Playlist" && !f.folder
   );
   if (!heraldFlipFolder)
-    return ui.notifications.error("Herald Flip folder not found.");
-  const themeFolder = game.folders.find(
-    (f) =>
-      f.name === category &&
-      f.folder?.id === heraldFlipFolder.id &&
-      f.type === "Playlist"
+    return ui.notifications.error(`${folderName} folder not found.`);
+
+  const playlist = game.playlists.find(
+    (p) => p.name === category && p.folder?.id === heraldFlipFolder.id
   );
-  if (!themeFolder)
-    return ui.notifications.error(`Theme folder "${category}" not found.`);
-  const userPlaylist = game.playlists.find(
-    (p) => p.name === userName && p.folder?.id === themeFolder.id
-  );
-  if (!userPlaylist)
-    return ui.notifications.error(`Playlist for user "${userName}" not found.`);
+  if (!playlist)
+    return ui.notifications.error(`Playlist "${category}" not found.`);
+
+  const audioFullName = `${audioName} (${userName})`;
 
   await PlaylistSound.create(
     {
-      name: audioName,
+      name: audioFullName,
       path: filePath,
       volume: 0.8,
     },
-    { parent: userPlaylist }
+    { parent: playlist }
   );
 }
 
 async function heraldFlip_addAudiotoPages(name, type, theme, ext) {
   const user = game.user;
   const folders = game.folders.filter((f) => f.type === "JournalEntry");
-  const heraldFlipFolder = folders.find((f) => f.name === "Herald Flip");
+  const heraldFlipFolder = folders.find((f) => f.name === "Herald's Flip");
 
   const playerFolder = folders.find(
     (f) => f.name === user.name && f.folder?.id === heraldFlipFolder?.id

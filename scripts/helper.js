@@ -21,11 +21,11 @@ async function heraldFlip_createFolderJournal(user) {
   let heraldFlipFolder = "";
   let playerFolder = "";
   for (let folder of folders) {
-    if (folder.name == "Herald Flip") {
+    if (folder.name == "Herald's Flip") {
       heraldFlipFolder = folder;
     }
     if (
-      (folder.name == user.name && folder.folder.name == "Herald Flip") ||
+      (folder.name == user.name && folder.folder.name == "Herald's Flip") ||
       (folder.name == user.name && folder.folder.id == heraldFlipFolder.id)
     ) {
       playerFolder = folder;
@@ -33,7 +33,7 @@ async function heraldFlip_createFolderJournal(user) {
   }
   if (!heraldFlipFolder) {
     heraldFlipFolder = await Folder.create({
-      name: "Herald Flip",
+      name: "Herald's Flip",
       type: "JournalEntry",
     });
   }
@@ -78,46 +78,43 @@ async function heraldFlip_createFolderPlaylist(user) {
     "Romantic",
     "Sad",
     "Reunion",
+    "Stealth",
+    "Quiet Resolve",
     "Battle",
     "Boss",
     "Heroic",
     "Hopeless",
+    "Last Stand",
+    "Corruption",
+    "Chase",
   ];
 
+  const folderName = user.isGM
+    ? "Music Library (Herald's Flip)"
+    : "Herald's Flip";
+
   let heraldFlipFolder = game.folders.find(
-    (f) => f.name === "Herald Flip" && f.type === "Playlist" && !f.folder
+    (f) => f.name === folderName && f.type === "Playlist" && !f.folder
   );
+
   if (!heraldFlipFolder) {
     heraldFlipFolder = await Folder.create({
-      name: "Herald Flip",
+      name: folderName,
       type: "Playlist",
     });
   }
 
   for (const theme of audioThemes) {
-    let themeFolder = game.folders.find(
-      (f) =>
-        f.name === theme &&
-        f.type === "Playlist" &&
-        f.folder?.id === heraldFlipFolder.id
-    );
-
-    if (!themeFolder) {
-      themeFolder = await Folder.create({
-        name: theme,
-        type: "Playlist",
-        folder: heraldFlipFolder.id,
-      });
-    }
+    const playlistName = theme;
 
     const existingPlaylist = game.playlists.find(
-      (p) => p.name === user.name && p.folder?.id === themeFolder.id
+      (p) => p.name === playlistName && p.folder?.id === heraldFlipFolder.id
     );
 
     if (!existingPlaylist) {
       await Playlist.create({
-        name: user.name,
-        folder: themeFolder.id,
+        name: playlistName,
+        folder: heraldFlipFolder.id,
       });
     }
   }

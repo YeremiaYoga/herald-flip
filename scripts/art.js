@@ -5,7 +5,7 @@ async function heraldFlip_renderViewFlipMiddleArt() {
   let flipMiddle = document.getElementById("heraldFlip-dialogFlipMiddle");
   const user = game.user;
   const folders = game.folders.filter((f) => f.type === "JournalEntry");
-  const heraldFlipFolder = folders.find((f) => f.name === "Herald Flip");
+  const heraldFlipFolder = folders.find((f) => f.name === "Herald's Flip");
 
   const playerFolder = folders.find(
     (f) => f.name === user.name && f.folder?.id === heraldFlipFolder?.id
@@ -190,7 +190,7 @@ async function heraldFlip_addAssetArtFlip() {
 async function heraldFlip_addArttoPages(name, type, ext) {
   const user = game.user;
   const folders = game.folders.filter((f) => f.type === "JournalEntry");
-  const heraldFlipFolder = folders.find((f) => f.name === "Herald Flip");
+  const heraldFlipFolder = folders.find((f) => f.name === "Herald's Flip");
 
   const playerFolder = folders.find(
     (f) => f.name === user.name && f.folder?.id === heraldFlipFolder?.id

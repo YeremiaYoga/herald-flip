@@ -105,7 +105,7 @@ async function heraldFlip_showDialogFlip() {
     </div>`;
 
   const dialog = new Dialog({
-    title: "Herald Flip",
+    title: "Herald's Flip",
     content: dialogContent,
     buttons: {},
     default: "add",
@@ -113,7 +113,7 @@ async function heraldFlip_showDialogFlip() {
 
   dialog.render(true);
   Hooks.once("renderDialog", async (app) => {
-    if (app instanceof Dialog && app.title === "Herald Flip") {
+    if (app instanceof Dialog && app.title === "Herald's Flip") {
       const width = 500;
       const height = 500;
 
@@ -176,7 +176,7 @@ async function heraldFlip_renderViewFlipMiddleToken() {
   let flipMiddle = document.getElementById("heraldFlip-dialogFlipMiddle");
   const user = game.user;
   const folders = game.folders.filter((f) => f.type === "JournalEntry");
-  const heraldFlipFolder = folders.find((f) => f.name === "Herald Flip");
+  const heraldFlipFolder = folders.find((f) => f.name === "Herald's Flip");
 
   const playerFolder = folders.find(
     (f) => f.name === user.name && f.folder?.id === heraldFlipFolder?.id
@@ -264,22 +264,59 @@ async function heraldFlip_renderViewFlipMiddleToken() {
           );
 
           const useCurrent = await new Promise((resolve) => {
-            new Dialog({
+            const dialog = new Dialog({
               title: "Choose Target",
-              content: `<p>Which actor should receive the update?</p>`,
-              buttons: {
-                current: {
-                  label: "By Current Actor",
-                  callback: () => resolve(true),
-                },
-                byId: {
-                  label: "By Actor ID",
-                  callback: () => resolve(false),
-                },
+              content: `
+      <p>Which actor should receive the update?</p>
+      <div style="display: flex; gap: 10px; justify-content: center; margin-top: 10px;">
+        <button type="button" class="dialog-choice" data-choice="current">
+          Current Player Character
+          <i class="fa-solid fa-circle-question" title="Change the character that you're currently 'main-img' as. Which is currently ${data.actorName}" style="margin-left: 5px;"></i>
+        </button>
+        <button type="button" class="dialog-choice" data-choice="byId">
+          By Selected Actor ID
+          <i class="fa-solid fa-circle-question" title="Change the character that have choosen when you created/edit this profile." style="margin-left: 5px;"></i>
+        </button>
+      </div>
+    `,
+              buttons: {}, // Empty buttons, handled manually
+              render: (html) => {
+                html.find(".dialog-choice").on("click", function () {
+                  const choice = this.dataset.choice;
+                  resolve(choice === "current");
+                  dialog.close();
+                });
               },
-              default: "current",
-              close: (html) => {},
-            }).render(true);
+              close: () => {},
+            });
+
+            dialog.render(true);
+
+            Hooks.once("renderDialog", (app) => {
+              const dialogElement = app.element[0];
+
+              const contentElement =
+                dialogElement.querySelector(".window-content");
+              if (contentElement) {
+                contentElement.style.backgroundColor = "rgba(0, 0, 0, 0.3)";
+                contentElement.style.color = "white";
+                contentElement.style.backgroundImage = "none";
+                contentElement.style.backgroundSize = "cover";
+                contentElement.style.backgroundRepeat = "no-repeat";
+                contentElement.style.backgroundPosition = "center";
+              }
+
+              const buttons = dialogElement.querySelectorAll(".dialog-choice");
+              buttons.forEach((button) => {
+                button.style.color = "white";
+                button.style.fontSize = "12px";
+                button.style.border = "1px solid white";
+                button.style.background = "transparent";
+                button.style.padding = "3px 6px";
+                button.style.borderRadius = "4px";
+                button.style.cursor = "pointer";
+              });
+            });
           });
 
           let actor;
@@ -316,24 +353,61 @@ async function heraldFlip_renderViewFlipMiddleToken() {
           const newImageUrl = data.imageUrl;
 
           const useCurrent = await new Promise((resolve) => {
-            new Dialog({
+            const dialog = new Dialog({
               title: "Choose Target",
-              content: `<p>Which actor should receive the update?</p>`,
-              buttons: {
-                current: {
-                  label: "By Current Actor",
-                  callback: () => resolve(true),
-                },
-                byId: {
-                  label: "By Actor ID",
-                  callback: () => resolve(false),
-                },
+              content: `
+      <p>Which actor should receive the update?</p>
+      <div style="display: flex; gap: 10px; justify-content: center; margin-top: 10px;">
+        <button type="button" class="heraldFlip-dialogChoice" data-choice="current">
+          Current Player Character
+          <i class="fa-solid fa-circle-question" title="Change the character that you're currently 'main-img' as. Which is currently ${data.actorName}" style="margin-left: 5px;"></i>
+        </button>
+        <button type="button" class="heraldFlip-dialogChoice" data-choice="byId">
+          By Selected Actor ID
+          <i class="fa-solid fa-circle-question" title="Change the character that was selected when creating or editing this profile." style="margin-left: 5px;"></i>
+        </button>
+      </div>
+    `,
+              buttons: {},
+              render: (html) => {
+                html.find(".heraldFlip-dialogChoice").on("click", function () {
+                  const choice = this.dataset.choice;
+                  resolve(choice === "current");
+                  dialog.close();
+                });
               },
-              default: "current",
-              close: () => {
-                return;
-              },
-            }).render(true);
+              close: () => {},
+            });
+
+            dialog.render(true);
+
+            Hooks.once("renderDialog", (app) => {
+              const dialogElement = app.element[0];
+
+              const contentElement =
+                dialogElement.querySelector(".window-content");
+              if (contentElement) {
+                contentElement.style.backgroundColor = "rgba(0, 0, 0, 0.3)";
+                contentElement.style.color = "white";
+                contentElement.style.backgroundImage = "none";
+                contentElement.style.backgroundSize = "cover";
+                contentElement.style.backgroundRepeat = "no-repeat";
+                contentElement.style.backgroundPosition = "center";
+              }
+
+              const buttons = dialogElement.querySelectorAll(
+                ".heraldFlip-dialogChoice"
+              );
+              buttons.forEach((button) => {
+                button.style.color = "white";
+                button.style.fontSize = "12px";
+                button.style.border = "1px solid white";
+                button.style.background = "transparent";
+                button.style.padding = "3px 6px";
+                button.style.borderRadius = "4px";
+                button.style.cursor = "pointer";
+              });
+            });
           });
 
           let actor;
@@ -562,7 +636,7 @@ async function heraldFlip_renderViewTokenFlipBottom() {
     .join("");
 
   const folders = game.folders.filter((f) => f.type === "JournalEntry");
-  const heraldFlipFolder = folders.find((f) => f.name === "Herald Flip");
+  const heraldFlipFolder = folders.find((f) => f.name === "Herald's Flip");
 
   const playerFolder = folders.find(
     (f) => f.name === user.name && f.folder?.id === heraldFlipFolder?.id
@@ -668,7 +742,7 @@ async function heraldFlip_renderViewTokenFlipBottom() {
             ),
           ];
           heraldFlip_filterToken = checked.map((cb) => cb.dataset.actorId);
-    
+
           heraldFlip_renderViewFlipMiddleToken();
         });
       });
@@ -676,7 +750,6 @@ async function heraldFlip_renderViewTokenFlipBottom() {
     document
       .getElementById("heraldFlip-filterTokenFlip")
       ?.addEventListener("click", () => {
-
         const filterMenu = document.getElementById(
           "heraldFlip-filterTokenFlipContainer"
         );
@@ -880,7 +953,7 @@ async function heraldFlip_addAssetTokenFlip() {
 async function heraldFlip_addTokentoPages(name, type, actorid, ext) {
   const user = game.user;
   const folders = game.folders.filter((f) => f.type === "JournalEntry");
-  const heraldFlipFolder = folders.find((f) => f.name === "Herald Flip");
+  const heraldFlipFolder = folders.find((f) => f.name === "Herald's Flip");
 
   const playerFolder = folders.find(
     (f) => f.name === user.name && f.folder?.id === heraldFlipFolder?.id

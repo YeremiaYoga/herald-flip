@@ -267,18 +267,18 @@ async function heraldFlip_renderViewFlipMiddleToken() {
             const dialog = new Dialog({
               title: "Choose Target",
               content: `
-      <p>Which actor should receive the update?</p>
-      <div style="display: flex; gap: 10px; justify-content: center; margin-top: 10px;">
-        <button type="button" class="dialog-choice" data-choice="current">
-          Current Player Character
-          <i class="fa-solid fa-circle-question" title="Change the character that you're currently 'main-img' as. Which is currently ${data.actorName}" style="margin-left: 5px;"></i>
-        </button>
-        <button type="button" class="dialog-choice" data-choice="byId">
-          By Selected Actor ID
-          <i class="fa-solid fa-circle-question" title="Change the character that have choosen when you created/edit this profile." style="margin-left: 5px;"></i>
-        </button>
-      </div>
-    `,
+              <p>Which actor should receive the update?</p>
+              <div style="display: flex; gap: 10px; justify-content: center; margin-top: 10px;">
+                <button type="button" class="dialog-choice" data-choice="current">
+                  Current Player Character
+                  <i class="fa-solid fa-circle-question" title="Change the character that you're currently 'main-img' as. Which is currently ${user.character?.name}" style="margin-left: 5px;"></i>
+                </button>
+                <button type="button" class="dialog-choice" data-choice="byId">
+                  By Selected Actor ID
+                  <i class="fa-solid fa-circle-question" title="Change the character that have choosen when you created/edit this profile. Which is currently ${data.actorName}" style="margin-left: 5px;"></i>
+                </button>
+              </div>
+            `,
               buttons: {}, // Empty buttons, handled manually
               render: (html) => {
                 html.find(".dialog-choice").on("click", function () {

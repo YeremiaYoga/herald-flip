@@ -20,6 +20,11 @@ let heraldFlip_audioTheme = [
   "Last Stand",
   "Corruption",
   "Chase",
+  "Eastern",
+  "Middle East",
+  "Super Fun",
+  "Bushido",
+  "Chaotic",
 ];
 let heraldFlip_audioSocket;
 Hooks.once("socketlib.ready", () => {
@@ -383,6 +388,9 @@ async function heraldFlip_addAssetAudioFlip() {
     "Mysterious",
     "Whimsical",
     "Mystic",
+    "Eastern",
+    "Middle East",
+    "Super Fun",
   ];
   const section2 = [
     "Melancholy",
@@ -400,6 +408,8 @@ async function heraldFlip_addAssetAudioFlip() {
     "Last Stand",
     "Corruption",
     "Chase",
+    "Bushido",
+    "Chaotic",
   ];
 
   const renderCategorySection = (themes, sectionTitle, defaultSelected) => {

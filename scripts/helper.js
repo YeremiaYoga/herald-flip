@@ -87,6 +87,11 @@ async function heraldFlip_createFolderPlaylist(user) {
     "Last Stand",
     "Corruption",
     "Chase",
+    "Eastern",
+    "Middle East",
+    "Super Fun",
+    "Bushido",
+    "Chaotic",
   ];
 
   const folderName = user.isGM
